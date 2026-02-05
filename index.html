@@ -4,457 +4,310 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Viona</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://js-cdn.music.apple.com/musickit/v3/musickit.js" crossorigin></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background: #121212; color: #fff; }
-
-        /* Screen transitions */
-        .screen { opacity: 0; transition: opacity 0.35s ease; pointer-events: none; }
-        .screen.active { opacity: 1; pointer-events: auto; }
-
-        /* Fade-in for dynamic elements */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(12px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
-
-        /* Toast animation */
-        @keyframes toastIn  { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
-        @keyframes toastOut { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -8px); } }
-
-        /* Custom range slider */
-        input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            height: 4px;
-            background: #282828;
-            border-radius: 2px;
-            outline: none;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #1db954;
-            cursor: pointer;
-            transition: transform 0.15s ease;
-        }
-        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
-        input[type="range"]::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #1db954;
-            border: none;
-            cursor: pointer;
-        }
-
-        /* Energy dots */
-        .energy-dot {
-            width: 24px; height: 24px;
-            border-radius: 4px; border: none;
-            cursor: pointer;
-            transition: transform 0.15s ease, opacity 0.15s ease;
-        }
-        .energy-dot:hover { transform: scale(1.15); }
-        .energy-dot:active { transform: scale(0.95); }
-        .energy-dot.inactive { opacity: 0.25; }
-        .energy-dot.inactive:hover { opacity: 0.6; }
-
-        /* Chip remove */
-        .chip-remove { opacity: 0.4; transition: opacity 0.15s; cursor: pointer; margin-left: 3px; }
-        .chip-remove:hover { opacity: 1; }
-
-        /* Feedback buttons */
-        .feedback-btn { transition: all 0.2s ease; }
-        .feedback-btn:active { transform: scale(0.9); }
-
-        /* Progress bar */
-        .progress-track { height: 4px; transition: height 0.15s ease; }
-        .progress-track:hover { height: 6px; }
+        :root{--bg:#f7f6f3;--bg-warm:#f0ede8;--surface:#fff;--text:#1a1a1a;--text-secondary:#8a8a8a;--text-tertiary:#b5b1ab;--border:#e8e5e1;--border-light:#f0ede8;--spotify:#1db954;--apple:#fc3c44;--serif:'Cormorant Garamond',Georgia,serif;--sans:'Outfit',-apple-system,sans-serif;--radius:4px;--radius-lg:8px;--ease:cubic-bezier(.25,.1,.25,1)}
+        *{box-sizing:border-box;margin:0;padding:0}html{font-size:16px;-webkit-font-smoothing:antialiased}
+        body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-weight:400;letter-spacing:-.01em;line-height:1.6}
+        .display{font-family:var(--serif);font-weight:500;letter-spacing:-.02em;line-height:1.15}
+        .display-lg{font-size:clamp(2.25rem,5vw,3.5rem)}.display-md{font-size:clamp(1.75rem,3.5vw,2.5rem)}.display-sm{font-size:clamp(1.25rem,2.5vw,1.75rem)}
+        .label{font-family:var(--sans);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--text-secondary)}
+        .body-sm{font-size:13px;color:var(--text-secondary);font-weight:400}
+        .screen{display:none;opacity:0;transition:opacity .6s var(--ease)}.screen.active{display:block;opacity:1}
+        @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes toastIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
+        @keyframes toastOut{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-10px)}}
+        .rise{animation:rise .7s var(--ease) both}.rise-1{animation-delay:.08s}.rise-2{animation-delay:.16s}.rise-3{animation-delay:.24s}.rise-4{animation-delay:.32s}.rise-5{animation-delay:.4s}.rise-6{animation-delay:.48s}
+        .container{max-width:640px;margin:0 auto;padding:0 28px}.section{padding:56px 0}.divider{height:1px;background:var(--border);margin:0}
+        .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px}
+        .input{width:100%;padding:14px 0;background:0 0;border:none;border-bottom:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:15px;outline:none;transition:border-color .3s var(--ease);border-radius:0}
+        .input:focus{border-color:var(--text)}.input::placeholder{color:var(--text-tertiary)}textarea.input{resize:none;line-height:1.5}
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 32px;font-family:var(--sans);font-size:13px;font-weight:600;letter-spacing:.04em;border:none;cursor:pointer;transition:all .35s var(--ease);text-transform:uppercase}
+        .btn-primary{background:var(--text);color:#fff;border-radius:var(--radius);width:100%}.btn-primary:hover{opacity:.85}.btn-primary:active{transform:scale(.99)}.btn-primary:disabled{opacity:.25;cursor:not-allowed}
+        .btn-ghost{background:0 0;color:var(--text-secondary);padding:10px 0;border-radius:0}.btn-ghost:hover{color:var(--text)}
+        .btn-service{width:100%;padding:18px 24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);font-family:var(--sans);font-size:14px;font-weight:500;color:var(--text);cursor:pointer;transition:all .3s var(--ease);display:flex;align-items:center;gap:14px;text-align:left}
+        .btn-service:hover{border-color:var(--text)}.btn-service:active{transform:scale(.995)}
+        .svc-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+        .chip-btn{padding:8px 16px;background:0 0;border:1px solid var(--border);border-radius:100px;font-family:var(--sans);font-size:13px;color:var(--text-secondary);cursor:pointer;transition:all .25s var(--ease)}
+        .chip-btn:hover{border-color:var(--text);color:var(--text)}
+        .chip-active{padding:8px 16px;background:var(--text);border:1px solid var(--text);border-radius:100px;font-family:var(--sans);font-size:13px;font-weight:500;color:#fff;display:inline-flex;align-items:center;gap:8px;animation:fadeIn .25s var(--ease)}
+        .chip-active button{background:0 0;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:13px;padding:0;line-height:1;transition:color .2s}.chip-active button:hover{color:#fff}
+        .energy-dot{width:22px;height:22px;border-radius:var(--radius);border:1.5px solid var(--border);background:0 0;cursor:pointer;transition:all .25s var(--ease);position:relative}
+        .energy-dot:hover{border-color:var(--text-secondary)}
+        .energy-dot.selected{border-color:transparent}.energy-dot.selected::after{content:'';position:absolute;inset:2px;border-radius:2px}
+        .energy-dot[data-level="1"].selected{border-color:#6b9dce}.energy-dot[data-level="1"].selected::after{background:#6b9dce}
+        .energy-dot[data-level="2"].selected{border-color:#7bb87e}.energy-dot[data-level="2"].selected::after{background:#7bb87e}
+        .energy-dot[data-level="3"].selected{border-color:#c9a84c}.energy-dot[data-level="3"].selected::after{background:#c9a84c}
+        .energy-dot[data-level="4"].selected{border-color:#d08350}.energy-dot[data-level="4"].selected::after{background:#d08350}
+        .energy-dot[data-level="5"].selected{border-color:#c45a5a}.energy-dot[data-level="5"].selected::after{background:#c45a5a}
+        input[type=range]{-webkit-appearance:none;appearance:none;height:1px;background:var(--border);outline:none;width:100%}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--text);cursor:pointer;transition:transform .2s var(--ease)}
+        input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+        input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--text);border:none;cursor:pointer}
+        .progress-track{height:1px;background:var(--border);cursor:pointer;transition:height .2s var(--ease)}.progress-track:hover{height:3px}
+        .progress-fill{height:100%;background:var(--text);transition:width .5s linear;border-radius:1px}
+        .play-btn{width:56px;height:56px;border-radius:50%;background:var(--text);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s var(--ease)}.play-btn:hover{opacity:.8}.play-btn:active{transform:scale(.95)}
+        .ctrl-btn{width:40px;height:40px;border-radius:50%;background:0 0;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:color .25s var(--ease)}.ctrl-btn:hover{color:var(--text)}
+        .fb-btn{width:48px;height:48px;border-radius:50%;background:0 0;border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:all .3s var(--ease)}.fb-btn:hover{border-color:var(--text);color:var(--text)}.fb-btn:active{transform:scale(.92)}
+        .track-item{display:flex;align-items:center;gap:14px;padding:12px 0;cursor:pointer;transition:opacity .2s;border-bottom:1px solid var(--border-light)}.track-item:last-child{border-bottom:none}.track-item:hover{opacity:.65}
+        ::-webkit-scrollbar{width:0}
+        .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+        .badge-spotify{background:#1db95415;color:var(--spotify)}.badge-apple{background:#fc3c4415;color:var(--apple)}.badge-demo{background:var(--bg-warm);color:var(--text-tertiary)}
     </style>
 </head>
-<body class="bg-[#121212] text-white overflow-x-hidden">
+<body>
 
-    <!-- ============ SETUP SCREEN ============ -->
-    <div id="setup-screen" class="screen active">
-        <div class="bg-gradient-to-b from-[#1db954] to-[#121212] pb-6">
-            <div class="max-w-2xl mx-auto px-5 pt-12 pb-6">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-black/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                        <span class="text-2xl">🎵</span>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-black tracking-tight">Create Your Vibe</h1>
-                        <p class="text-xs text-white/60">Quick setup, infinite music</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="max-w-2xl mx-auto px-5 py-5 space-y-4">
-            <!-- Intent -->
-            <div class="bg-[#181818] rounded-xl p-5">
-                <label class="block text-[11px] font-bold uppercase tracking-widest text-[#a0a0a0] mb-2">What's the vibe?</label>
-                <input id="intent-input" type="text" value="dinner with friends"
-                    class="w-full px-3.5 py-2.5 bg-[#121212] border border-[#282828] rounded-lg text-sm text-white placeholder-[#535353] focus:border-[#1db954] focus:outline-none transition-colors" />
-            </div>
-
-            <!-- Preferences -->
-            <div class="bg-[#181818] rounded-xl p-5">
-                <h2 class="text-[11px] font-bold uppercase tracking-widest text-[#a0a0a0] mb-4">Preferences</h2>
-                <div class="mb-5">
-                    <label class="block text-sm font-medium mb-2">Genres I like</label>
-                    <div class="flex flex-wrap gap-1.5 mb-2">
-                        <button onclick="toggleChip('genre','Pop')" class="px-2.5 py-1 bg-[#282828] hover:bg-[#3e3e3e] rounded-full text-xs transition-colors">+ Pop</button>
-                        <button onclick="toggleChip('genre','Jazz')" class="px-2.5 py-1 bg-[#282828] hover:bg-[#3e3e3e] rounded-full text-xs transition-colors">+ Jazz</button>
-                        <button onclick="toggleChip('genre','Indie')" class="px-2.5 py-1 bg-[#282828] hover:bg-[#3e3e3e] rounded-full text-xs transition-colors">+ Indie</button>
-                        <button onclick="toggleChip('genre','R&B')" class="px-2.5 py-1 bg-[#282828] hover:bg-[#3e3e3e] rounded-full text-xs transition-colors">+ R&B</button>
-                        <button onclick="toggleChip('genre','Electronic')" class="px-2.5 py-1 bg-[#282828] hover:bg-[#3e3e3e] rounded-full text-xs transition-colors">+ Electronic</button>
-                    </div>
-                    <div id="genre-chips" class="flex flex-wrap gap-1.5"></div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Moods</label>
-                    <div class="flex flex-wrap gap-1.5 mb-2">
-                        <button onclick="toggleChip('mood','Chill')" class="px-2.5 py-1 bg-[#282828] hover:bg-[#3e3e3e] rounded-full text-xs transition-colors">+ Chill</button>
-                        <button onclick="toggleChip('mood','Romantic')" class="px-2.5 py-1 bg-[#282828] hover:bg-[#3e3e3e] rounded-full text-xs transition-colors">+ Romantic</button>
-                        <button onclick="toggleChip('mood','Energetic')" class="px-2.5 py-1 bg-[#282828] hover:bg-[#3e3e3e] rounded-full text-xs transition-colors">+ Energetic</button>
-                        <button onclick="toggleChip('mood','Melancholy')" class="px-2.5 py-1 bg-[#282828] hover:bg-[#3e3e3e] rounded-full text-xs transition-colors">+ Melancholy</button>
-                    </div>
-                    <div id="mood-chips" class="flex flex-wrap gap-1.5"></div>
-                </div>
-            </div>
-
-            <!-- Free Text -->
-            <div class="bg-[#1db954]/[0.06] border border-[#1db954]/20 rounded-xl p-5">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="text-sm">✨</span>
-                    <label class="text-[11px] font-bold uppercase tracking-widest text-[#1db954]">Tell AI anything</label>
-                </div>
-                <textarea id="free-text" rows="2"
-                    placeholder='e.g., "80s vibes", "European café music", "avoid mainstream"...'
-                    class="w-full px-3.5 py-2.5 bg-[#121212] border border-[#282828] rounded-lg text-sm text-white placeholder-[#535353] focus:border-[#1db954] focus:outline-none transition-colors resize-none"
-                >Sophisticated dinner music. European café vibe, nothing too loud.</textarea>
-            </div>
-
-            <!-- Energy Flow -->
-            <div class="bg-[#181818] rounded-xl p-5">
-                <div class="flex items-center justify-between mb-5">
-                    <h2 class="text-[11px] font-bold uppercase tracking-widest text-[#a0a0a0]">Energy Flow</h2>
-                    <div class="px-2.5 py-1 bg-[#1db954]/10 border border-[#1db954]/20 rounded-full">
-                        <span class="text-[11px] text-[#a0a0a0]">Total </span>
-                        <span id="total-duration" class="text-[11px] font-bold text-[#1db954]">80 min</span>
-                    </div>
-                </div>
-
-                <div class="space-y-5" id="energy-phases">
-                    <div class="energy-phase" data-phase="1">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-sm font-medium">Start</span>
-                            <div class="flex items-center gap-2">
-                                <span class="phase-duration text-xs text-[#a0a0a0]">20 min</span>
-                                <span class="text-xs text-[#404040]">·</span>
-                                <span class="phase-energy-label text-xs font-semibold text-[#1db954]">Low</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <input type="range" min="10" max="90" step="5" value="20" class="flex-1 phase-slider" />
-                            <div class="flex gap-1 energy-dots"></div>
-                        </div>
-                    </div>
-                    <div class="energy-phase" data-phase="2">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-sm font-medium">Peak</span>
-                            <div class="flex items-center gap-2">
-                                <span class="phase-duration text-xs text-[#a0a0a0]">40 min</span>
-                                <span class="text-xs text-[#404040]">·</span>
-                                <span class="phase-energy-label text-xs font-semibold text-[#1db954]">High</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <input type="range" min="10" max="90" step="5" value="40" class="flex-1 phase-slider" />
-                            <div class="flex gap-1 energy-dots"></div>
-                        </div>
-                    </div>
-                    <div class="energy-phase" data-phase="3">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-sm font-medium">End</span>
-                            <div class="flex items-center gap-2">
-                                <span class="phase-duration text-xs text-[#a0a0a0]">20 min</span>
-                                <span class="text-xs text-[#404040]">·</span>
-                                <span class="phase-energy-label text-xs font-semibold text-[#1db954]">Very Low</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <input type="range" min="10" max="90" step="5" value="20" class="flex-1 phase-slider" />
-                            <div class="flex gap-1 energy-dots"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-5 pt-4 border-t border-[#232323]">
-                    <div class="flex items-center justify-between text-[11px] text-[#707070]">
-                        <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm" style="background:#3b82f6"></div>Very Low</div>
-                        <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm" style="background:#22c55e"></div>Low</div>
-                        <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm" style="background:#eab308"></div>Medium</div>
-                        <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm" style="background:#f97316"></div>High</div>
-                        <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm" style="background:#ef4444"></div>Very High</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Spotify Toggle -->
-            <div class="bg-[#181818] rounded-xl p-5">
-                <label class="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" checked class="w-4 h-4 rounded accent-[#1db954]" />
-                    <div class="flex-1">
-                        <div class="text-sm font-medium">All 100M+ Spotify songs</div>
-                        <div class="text-xs text-[#707070] mt-0.5">Uncheck to use only your library</div>
-                    </div>
-                </label>
-            </div>
-
-            <!-- Start Button -->
-            <button onclick="startSession()"
-                class="w-full py-3.5 bg-[#1db954] hover:bg-[#1ed760] active:bg-[#18a34a] text-black font-bold rounded-full transition-all hover:scale-[1.01] active:scale-[0.99]">
-                Start Session
-            </button>
-            <div class="h-4"></div>
+<!-- ══════════ CONNECT ══════════ -->
+<div id="connect-screen" class="screen active">
+<div class="container" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding-top:60px;padding-bottom:60px">
+    <div class="rise" style="margin-bottom:64px">
+        <p class="label" style="margin-bottom:16px">Est. 2026</p>
+        <h1 class="display display-lg" style="margin-bottom:12px">Viona</h1>
+        <p class="body-sm" style="max-width:320px">AI-curated music sessions.<br>Connect your streaming service to begin.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:40px" class="rise rise-1">
+        <button class="btn-service" onclick="showServiceSetup('spotify')">
+            <div class="svc-dot" style="background:var(--spotify)"></div>
+            <div style="flex:1"><div style="font-weight:600">Spotify</div><div class="body-sm" style="font-size:12px;margin-top:2px">Connect with Client ID</div></div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="btn-service" onclick="showServiceSetup('apple')">
+            <div class="svc-dot" style="background:var(--apple)"></div>
+            <div style="flex:1"><div style="font-weight:600">Apple Music</div><div class="body-sm" style="font-size:12px;margin-top:2px">Connect with Developer Token</div></div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+    </div>
+    <!-- Spotify setup -->
+    <div id="spotify-setup" class="rise" style="display:none;margin-bottom:32px">
+        <div class="card">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px"><div class="svc-dot" style="background:var(--spotify);width:8px;height:8px"></div><span class="label" style="color:var(--spotify)">Spotify</span></div>
+            <label class="label" style="display:block;margin-bottom:8px">Client ID</label>
+            <input id="spotify-client-id" type="text" class="input" placeholder="Paste your Spotify Client ID" style="margin-bottom:16px;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:13px" oninput="checkSpotifyReady()"/>
+            <label class="label" style="display:block;margin-bottom:8px">Redirect URI</label>
+            <input id="spotify-redirect" type="text" class="input" placeholder="http://localhost:8080/callback" style="margin-bottom:20px;font-size:13px"/>
+            <p class="body-sm" style="font-size:11px;margin-bottom:20px;line-height:1.6">Create an app at <a href="https://developer.spotify.com/dashboard" target="_blank" style="color:var(--text);text-decoration:underline">developer.spotify.com</a> → Copy your Client ID → Add a Redirect URI<br><span style="color:var(--text-tertiary)">Note: New Spotify app registration is currently on hold.</span></p>
+            <button id="spotify-connect-btn" class="btn btn-primary" onclick="connectSpotify()" disabled>Connect</button>
+            <div id="spotify-error" style="display:none;margin-top:12px;font-size:12px;color:#c45a5a;text-align:center"></div>
         </div>
     </div>
-
-    <!-- ============ PLAYBACK SCREEN ============ -->
-    <div id="playback-screen" class="screen hidden relative">
-        <div class="absolute inset-0 bg-gradient-to-b from-[#1db954]/15 via-[#121212] to-[#121212] pointer-events-none"></div>
-
-        <div class="relative max-w-lg mx-auto px-5 py-8 flex flex-col items-center min-h-screen">
-            <!-- Back -->
-            <button onclick="backToSetup()" class="self-start mb-6 flex items-center gap-1.5 text-sm text-[#a0a0a0] hover:text-white transition-colors">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Edit session
-            </button>
-
-            <!-- Album Art -->
-            <div class="w-64 h-64 sm:w-72 sm:h-72 bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] rounded-2xl shadow-2xl flex items-center justify-center mb-8 relative overflow-hidden">
-                <div class="absolute inset-0 bg-[#1db954]/10"></div>
-                <svg class="relative z-10 w-20 h-20 text-white/20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
-                </svg>
-            </div>
-
-            <!-- Track Info -->
-            <h2 id="track-name" class="text-2xl sm:text-3xl font-bold tracking-tight text-center mb-1">Come Away With Me</h2>
-            <p id="artist-name" class="text-base text-[#a0a0a0] mb-8">Norah Jones</p>
-
-            <!-- Progress -->
-            <div class="w-full mb-1">
-                <div class="progress-track bg-[#404040] rounded-full overflow-hidden cursor-pointer">
-                    <div id="progress-bar" class="h-full bg-[#1db954] rounded-full transition-[width] duration-500" style="width:0%"></div>
-                </div>
-            </div>
-            <div class="w-full flex justify-between text-[11px] text-[#707070] mb-10">
-                <span id="current-time">0:00</span>
-                <span id="total-time">3:00</span>
-            </div>
-
-            <!-- Feedback -->
-            <div id="feedback-buttons" class="flex items-center justify-center gap-8">
-                <button onclick="handleDislike()" class="feedback-btn w-14 h-14 rounded-full border border-[#404040] hover:border-red-400 hover:bg-red-400/10 flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a0a0a0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3zm7-13h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>
-                </button>
-                <button onclick="handleLike()" class="feedback-btn w-14 h-14 rounded-full border border-[#404040] hover:border-[#1db954] hover:bg-[#1db954]/10 flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a0a0a0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
-                </button>
-            </div>
-
-            <!-- Dislike Reason -->
-            <div id="dislike-reason" class="hidden w-full max-w-sm space-y-3 animate-fadeIn">
-                <div class="flex items-center justify-between mb-1">
-                    <p class="text-sm text-[#a0a0a0]">What's off? <span class="text-[#535353]">(optional)</span></p>
-                    <button onclick="cancelDislike()" class="w-7 h-7 rounded-full hover:bg-[#282828] flex items-center justify-center text-[#535353] hover:text-white transition-colors text-lg leading-none">×</button>
-                </div>
-                <input id="reason-input" type="text" placeholder='e.g., "too slow", "not my style"'
-                    class="w-full px-3.5 py-2.5 bg-[#181818] border border-[#282828] rounded-lg text-sm text-white placeholder-[#535353] focus:border-[#1db954] focus:outline-none transition-colors" />
-                <button onclick="submitDislike()"
-                    class="w-full py-2.5 bg-[#282828] hover:bg-[#3e3e3e] active:bg-[#222] text-sm font-semibold rounded-full transition-colors">
-                    Skip & Next
-                </button>
-            </div>
-
-            <!-- Footer -->
-            <div class="mt-auto pt-10 pb-4 text-center">
-                <p class="text-[11px] text-[#404040]">Viona is learning your preferences</p>
-            </div>
+    <!-- Apple setup -->
+    <div id="apple-setup" class="rise" style="display:none;margin-bottom:32px">
+        <div class="card">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px"><div class="svc-dot" style="background:var(--apple);width:8px;height:8px"></div><span class="label" style="color:var(--apple)">Apple Music</span></div>
+            <label class="label" style="display:block;margin-bottom:8px">Developer Token (JWT)</label>
+            <textarea id="apple-token" rows="3" class="input" placeholder="Paste your MusicKit developer token" style="font-family:'SF Mono',Monaco,Consolas,monospace;font-size:12px;margin-bottom:16px" oninput="checkAppleReady()"></textarea>
+            <p class="body-sm" style="font-size:11px;margin-bottom:20px;line-height:1.6">Join <a href="https://developer.apple.com/programs/" target="_blank" style="color:var(--text);text-decoration:underline">Apple Developer Program</a> ($99/yr) → Create MusicKit key → Generate JWT</p>
+            <button id="apple-connect-btn" class="btn btn-primary" onclick="connectAppleMusic()" disabled>Connect</button>
+            <div id="apple-error" style="display:none;margin-top:12px;font-size:12px;color:#c45a5a;text-align:center"></div>
         </div>
     </div>
+    <div class="rise rise-2"><button class="btn btn-ghost" onclick="startDemo()" style="width:100%;text-align:center">Continue without account →</button></div>
+</div>
+</div>
+
+<!-- ══════════ SETUP ══════════ -->
+<div id="setup-screen" class="screen">
+<div class="container section">
+    <div class="rise" style="margin-bottom:48px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><p class="label">Viona</p><span id="connection-badge" class="badge"></span></div>
+        <h1 class="display display-md">Create your vibe</h1>
+    </div>
+    <div class="rise rise-1" style="margin-bottom:48px">
+        <label class="label" style="display:block;margin-bottom:12px">What's the occasion?</label>
+        <input id="intent-input" type="text" class="input" value="dinner with friends" style="font-size:18px;font-family:var(--serif);font-weight:500"/>
+    </div>
+    <div class="rise rise-2" style="margin-bottom:40px">
+        <label class="label" style="display:block;margin-bottom:14px">Genres</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <button class="chip-btn" onclick="toggleChip('genre','Pop')">Pop</button>
+            <button class="chip-btn" onclick="toggleChip('genre','Jazz')">Jazz</button>
+            <button class="chip-btn" onclick="toggleChip('genre','Indie')">Indie</button>
+            <button class="chip-btn" onclick="toggleChip('genre','R&B')">R&B</button>
+            <button class="chip-btn" onclick="toggleChip('genre','Electronic')">Electronic</button>
+            <button class="chip-btn" onclick="toggleChip('genre','Classical')">Classical</button>
+        </div>
+        <div id="genre-chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+    <div class="rise rise-3" style="margin-bottom:40px">
+        <label class="label" style="display:block;margin-bottom:14px">Mood</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <button class="chip-btn" onclick="toggleChip('mood','Chill')">Chill</button>
+            <button class="chip-btn" onclick="toggleChip('mood','Romantic')">Romantic</button>
+            <button class="chip-btn" onclick="toggleChip('mood','Energetic')">Energetic</button>
+            <button class="chip-btn" onclick="toggleChip('mood','Melancholy')">Melancholy</button>
+        </div>
+        <div id="mood-chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+    <div class="divider rise rise-3" style="margin-bottom:40px"></div>
+    <div class="rise rise-4" style="margin-bottom:48px">
+        <label class="label" style="display:block;margin-bottom:12px">Describe your ideal soundtrack</label>
+        <textarea id="free-text" rows="2" class="input" placeholder="e.g. European café music, nothing too loud...">Sophisticated dinner music. European café vibe, nothing too loud.</textarea>
+    </div>
+    <div class="rise rise-5" style="margin-bottom:48px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
+            <label class="label">Energy Flow</label>
+            <span id="total-duration" style="font-size:13px;font-weight:500;color:var(--text-secondary)">80 min</span>
+        </div>
+        <div id="energy-phases" style="display:flex;flex-direction:column;gap:28px">
+            <div class="energy-phase" data-phase="1"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><span style="font-size:14px;font-weight:500">Start</span><div style="display:flex;align-items:center;gap:10px"><span class="phase-duration body-sm">20 min</span><span style="color:var(--border)">·</span><span class="phase-energy-label" style="font-size:12px;font-weight:600">Low</span></div></div><div style="display:flex;align-items:center;gap:16px"><input type="range" min="10" max="90" step="5" value="20" class="phase-slider" style="flex:1"/><div class="energy-dots" style="display:flex;gap:5px"></div></div></div>
+            <div class="energy-phase" data-phase="2"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><span style="font-size:14px;font-weight:500">Peak</span><div style="display:flex;align-items:center;gap:10px"><span class="phase-duration body-sm">40 min</span><span style="color:var(--border)">·</span><span class="phase-energy-label" style="font-size:12px;font-weight:600">High</span></div></div><div style="display:flex;align-items:center;gap:16px"><input type="range" min="10" max="90" step="5" value="40" class="phase-slider" style="flex:1"/><div class="energy-dots" style="display:flex;gap:5px"></div></div></div>
+            <div class="energy-phase" data-phase="3"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><span style="font-size:14px;font-weight:500">End</span><div style="display:flex;align-items:center;gap:10px"><span class="phase-duration body-sm">20 min</span><span style="color:var(--border)">·</span><span class="phase-energy-label" style="font-size:12px;font-weight:600">Very Low</span></div></div><div style="display:flex;align-items:center;gap:16px"><input type="range" min="10" max="90" step="5" value="20" class="phase-slider" style="flex:1"/><div class="energy-dots" style="display:flex;gap:5px"></div></div></div>
+        </div>
+    </div>
+    <div class="rise rise-6"><button onclick="startSession()" class="btn btn-primary" style="padding:18px 32px;font-size:14px">Begin Session</button></div>
+    <div style="height:48px"></div>
+</div>
+</div>
+
+<!-- ══════════ PLAYBACK ══════════ -->
+<div id="playback-screen" class="screen">
+<div class="container" style="min-height:100vh;display:flex;flex-direction:column;padding-top:40px;padding-bottom:40px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:48px" class="rise">
+        <button class="btn btn-ghost" onclick="backToSetup()" style="padding:0;font-size:12px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right:6px"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Edit</button>
+        <span class="label" style="color:var(--text-tertiary)">Now Playing</span>
+    </div>
+    <div class="rise rise-1" style="display:flex;justify-content:center;margin-bottom:48px">
+        <div id="album-art-container" style="width:min(300px,72vw);aspect-ratio:1;background:var(--bg-warm);border-radius:var(--radius-lg);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center">
+            <img id="album-art-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"/>
+            <svg id="album-art-placeholder" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="1"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        </div>
+    </div>
+    <div class="rise rise-2" style="text-align:center;margin-bottom:40px">
+        <h2 id="track-name" class="display display-sm" style="margin-bottom:4px">Waiting for music</h2>
+        <p id="artist-name" style="font-size:14px;color:var(--text-secondary);margin-bottom:2px">—</p>
+        <p id="album-name" style="font-size:12px;color:var(--text-tertiary)"></p>
+    </div>
+    <div class="rise rise-3" style="margin-bottom:32px">
+        <div class="progress-track" onclick="seekTrack(event)"><div id="progress-bar" class="progress-fill" style="width:0%"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px">
+            <span id="current-time" style="font-size:11px;color:var(--text-tertiary);font-variant-numeric:tabular-nums">0:00</span>
+            <span id="total-time" style="font-size:11px;color:var(--text-tertiary);font-variant-numeric:tabular-nums">0:00</span>
+        </div>
+    </div>
+    <div class="rise rise-4" style="display:flex;align-items:center;justify-content:center;gap:24px;margin-bottom:40px">
+        <button class="ctrl-btn" onclick="previousTrack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+        <button id="play-pause-btn" class="play-btn" onclick="togglePlayPause()">
+            <svg id="play-icon" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="pause-icon" width="20" height="20" viewBox="0 0 24 24" fill="white" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        <button class="ctrl-btn" onclick="skipTrack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+    </div>
+    <div class="rise rise-5" style="margin-bottom:32px">
+        <div id="feedback-buttons" style="display:flex;align-items:center;justify-content:center;gap:20px">
+            <button class="fb-btn" onclick="handleDislike()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3zm7-13h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg></button>
+            <button class="fb-btn" onclick="handleLike()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg></button>
+        </div>
+        <div id="dislike-reason" style="display:none;max-width:360px;margin:0 auto">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><p class="body-sm">What's off?</p><button onclick="cancelDislike()" style="background:0 0;border:none;cursor:pointer;color:var(--text-tertiary);font-size:18px;line-height:1">×</button></div>
+            <input id="reason-input" type="text" class="input" placeholder="Too slow, not my style..." style="margin-bottom:16px"/>
+            <button onclick="submitDislike()" class="btn btn-primary" style="font-size:12px;padding:12px">Skip & Next</button>
+        </div>
+    </div>
+    <div id="up-next" style="display:none;flex:1"><div class="divider" style="margin-bottom:24px"></div><p class="label" style="margin-bottom:16px">Up Next</p><div id="up-next-list"></div></div>
+    <div style="margin-top:auto;padding-top:32px;text-align:center"><p style="font-size:10px;color:var(--text-tertiary);letter-spacing:.08em;text-transform:uppercase">Viona is learning your preferences</p></div>
+</div>
+</div>
 
 <script>
-// ── Config ──────────────────────────────────
-const ENERGY = {
-    1: { label: 'Very Low', color: '#3b82f6' },
-    2: { label: 'Low',      color: '#22c55e' },
-    3: { label: 'Medium',   color: '#eab308' },
-    4: { label: 'High',     color: '#f97316' },
-    5: { label: 'Very High',color: '#ef4444' }
-};
+const ENERGY={1:{label:'Very Low',color:'#6b9dce'},2:{label:'Low',color:'#7bb87e'},3:{label:'Medium',color:'#c9a84c'},4:{label:'High',color:'#d08350'},5:{label:'Very High',color:'#c45a5a'}};
+const DEMO_TRACKS=[{name:'Come Away With Me',artist:'Norah Jones',album:'Come Away With Me',duration:198,artUrl:''},{name:'Feeling Good',artist:'Nina Simone',album:'I Put a Spell on You',duration:175,artUrl:''},{name:'Blue in Green',artist:'Miles Davis',album:'Kind of Blue',duration:328,artUrl:''},{name:'The Girl from Ipanema',artist:'Stan Getz',album:'Getz/Gilberto',duration:212,artUrl:''},{name:'Corcovado',artist:'João Gilberto',album:'Getz/Gilberto',duration:198,artUrl:''}];
 
-const DEMO_TRACKS = [
-    { name: 'Come Away With Me',     artist: 'Norah Jones',   duration: 180 },
-    { name: 'Feeling Good',          artist: 'Nina Simone',   duration: 175 },
-    { name: 'Blue in Green',         artist: 'Miles Davis',   duration: 328 },
-    { name: 'The Girl from Ipanema', artist: 'Stan Getz',     duration: 212 },
-    { name: 'Corcovado',             artist: 'João Gilberto', duration: 198 },
-];
+const phases={1:{duration:20,energy:2},2:{duration:40,energy:4},3:{duration:20,energy:1}};
+const activeChips={genre:new Set(['Jazz']),mood:new Set(['Chill'])};
+let currentTrackIndex=0,isPlaying=false,serviceMode='demo',musicInstance=null,spotifyToken=null,playbackInterval=null,currentQueue=[];
 
-// ── State ───────────────────────────────────
-const phases = { 1: { duration: 20, energy: 2 }, 2: { duration: 40, energy: 4 }, 3: { duration: 20, energy: 1 } };
-const activeChips = { genre: new Set(['Jazz']), mood: new Set(['Chill']) };
-let currentTrackIndex = 0;
-let playbackInterval = null;
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>{s.style.display='none';s.classList.remove('active')});const el=document.getElementById(id);el.style.display='block';requestAnimationFrame(()=>{el.classList.add('active');window.scrollTo(0,0)})}
 
-// ── Screens ─────────────────────────────────
-function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => { s.classList.add('hidden'); s.classList.remove('active'); });
-    const el = document.getElementById(id);
-    el.classList.remove('hidden');
-    void el.offsetHeight; // reflow
-    el.classList.add('active');
-    window.scrollTo(0, 0);
+// ── Connect ─────────────────────────────
+function showServiceSetup(s){document.getElementById('spotify-setup').style.display=s==='spotify'?'block':'none';document.getElementById('apple-setup').style.display=s==='apple'?'block':'none'}
+function checkSpotifyReady(){document.getElementById('spotify-connect-btn').disabled=document.getElementById('spotify-client-id').value.trim().length<10}
+function checkAppleReady(){document.getElementById('apple-connect-btn').disabled=document.getElementById('apple-token').value.trim().length<50}
+
+function connectSpotify(){
+    const clientId=document.getElementById('spotify-client-id').value.trim();
+    let redirectUri=document.getElementById('spotify-redirect').value.trim();
+    if(!redirectUri)redirectUri=window.location.href.split('?')[0];
+    const scopes='streaming user-read-email user-read-private user-library-read';
+    const v=genStr(128);sessionStorage.setItem('sp_v',v);sessionStorage.setItem('sp_c',clientId);sessionStorage.setItem('sp_r',redirectUri);
+    genChallenge(v).then(ch=>{const p=new URLSearchParams({response_type:'code',client_id:clientId,scope:scopes,redirect_uri:redirectUri,code_challenge_method:'S256',code_challenge:ch});window.location.href='https://accounts.spotify.com/authorize?'+p.toString()});
 }
-function startSession() { currentTrackIndex = 0; showScreen('playback-screen'); loadTrack(0); }
-function backToSetup()  { clearPlayback(); showScreen('setup-screen'); }
+function genStr(n){const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';let t='';for(let i=0;i<n;i++)t+=c.charAt(Math.floor(Math.random()*c.length));return t}
+async function genChallenge(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));return btoa(String.fromCharCode(...new Uint8Array(d))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
 
-// ── Chips ───────────────────────────────────
-function toggleChip(type, text) {
-    activeChips[type].has(text) ? activeChips[type].delete(text) : activeChips[type].add(text);
-    renderChips(type);
-}
-function removeChip(type, text) { activeChips[type].delete(text); renderChips(type); }
-function renderChips(type) {
-    const c = document.getElementById(type + '-chips');
-    c.innerHTML = '';
-    activeChips[type].forEach(t => {
-        const d = document.createElement('div');
-        d.className = 'px-2.5 py-1 bg-[#1db954]/15 border border-[#1db954]/40 rounded-full text-xs flex items-center gap-1 animate-fadeIn';
-        d.innerHTML = `${t}<button onclick="removeChip('${type}','${t}')" class="chip-remove text-[11px]">✕</button>`;
-        c.appendChild(d);
-    });
+async function handleSpotifyCallback(){
+    const code=new URLSearchParams(window.location.search).get('code');if(!code)return false;
+    const c=sessionStorage.getItem('sp_c'),r=sessionStorage.getItem('sp_r'),v=sessionStorage.getItem('sp_v');if(!c||!v)return false;
+    try{const res=await fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',code,redirect_uri:r,client_id:c,code_verifier:v})});
+    const d=await res.json();if(d.access_token){spotifyToken=d.access_token;serviceMode='spotify';window.history.replaceState({},'',window.location.pathname);setBadge('spotify');showScreen('setup-screen');return true}}catch(e){console.error(e)}return false;
 }
 
-// ── Energy Flow ─────────────────────────────
-function initEnergyPhases() {
-    document.querySelectorAll('.energy-phase').forEach(el => {
-        const p = parseInt(el.dataset.phase);
-        const dots = el.querySelector('.energy-dots');
-        const slider = el.querySelector('.phase-slider');
-
-        for (let i = 1; i <= 5; i++) {
-            const btn = document.createElement('button');
-            btn.className = 'energy-dot';
-            btn.style.backgroundColor = ENERGY[i].color;
-            btn.dataset.level = i;
-            btn.onclick = () => setEnergy(p, i);
-            dots.appendChild(btn);
-        }
-
-        slider.addEventListener('input', () => {
-            phases[p].duration = parseInt(slider.value);
-            refreshPhase(p);
-            updateTotal();
-        });
-
-        updateEnergyDots(p);
-        refreshPhase(p);
-    });
-    updateTotal();
+async function connectAppleMusic(){
+    const token=document.getElementById('apple-token').value.trim();if(!token)return;
+    const btn=document.getElementById('apple-connect-btn');btn.disabled=true;btn.textContent='CONNECTING...';
+    try{await MusicKit.configure({developerToken:token,app:{name:'Viona',build:'1.0.0'}});musicInstance=MusicKit.getInstance();await musicInstance.authorize();serviceMode='apple';setBadge('apple');showScreen('setup-screen')}
+    catch(e){console.error(e);document.getElementById('apple-error').style.display='block';document.getElementById('apple-error').textContent=e.message||'Connection failed.';btn.disabled=false;btn.textContent='CONNECT'}
 }
 
-function setEnergy(p, lvl) { phases[p].energy = lvl; updateEnergyDots(p); refreshPhase(p); }
+function startDemo(){serviceMode='demo';setBadge('demo');showScreen('setup-screen')}
+function setBadge(m){const b=document.getElementById('connection-badge');if(m==='spotify'){b.className='badge badge-spotify';b.innerHTML='● Spotify'}else if(m==='apple'){b.className='badge badge-apple';b.innerHTML='● Apple Music'}else{b.className='badge badge-demo';b.innerHTML='◌ Demo'}}
 
-function updateEnergyDots(p) {
-    document.querySelector(`.energy-phase[data-phase="${p}"]`).querySelectorAll('.energy-dot').forEach(d => {
-        d.classList.toggle('inactive', parseInt(d.dataset.level) !== phases[p].energy);
-    });
-}
+// ── Session ─────────────────────────────
+async function startSession(){currentTrackIndex=0;showScreen('playback-screen');if(serviceMode==='demo'){currentQueue=[...DEMO_TRACKS];loadTrack(0)}else if(serviceMode==='apple')await loadAppleMusicQueue();else if(serviceMode==='spotify')await loadSpotifyQueue()}
+function backToSetup(){stopPlayback();showScreen('setup-screen')}
+function buildSearchQuery(){return[document.getElementById('intent-input').value,[...activeChips.genre].join(' '),[...activeChips.mood].join(' '),document.getElementById('free-text').value].filter(Boolean).join(' ').substring(0,100)}
 
-function refreshPhase(p) {
-    const el = document.querySelector(`.energy-phase[data-phase="${p}"]`);
-    el.querySelector('.phase-duration').textContent = phases[p].duration + ' min';
-    el.querySelector('.phase-energy-label').textContent = ENERGY[phases[p].energy].label;
-}
+// ── Apple Music ─────────────────────────
+async function loadAppleMusicQueue(){showLoadingState();try{const q=buildSearchQuery(),sf=musicInstance.storefrontId||'us',r=await musicInstance.api.music('/v1/catalog/'+sf+'/search',{term:q,types:['songs'],limit:25});const s=r?.data?.results?.songs?.data||[];currentQueue=s.length>0?s.map(mapApple):[...DEMO_TRACKS];if(currentQueue.length>0)loadAppleTrack(0)}catch(e){console.error(e);currentQueue=[...DEMO_TRACKS];loadTrack(0)}}
+function mapApple(s){const a=s.attributes;return{id:s.id,name:a.name,artist:a.artistName,album:a.albumName||'',duration:Math.round((a.durationInMillis||0)/1000),artUrl:a.artwork?.url?a.artwork.url.replace('{w}','600').replace('{h}','600'):'',catalogId:s.id}}
+async function loadAppleTrack(i){if(i>=currentQueue.length){showToast('Session complete');return}currentTrackIndex=i;updateTrackUI(currentQueue[i]);updateUpNext();try{await musicInstance.setQueue({songs:[currentQueue[i].catalogId]});await musicInstance.play();setPlayingState(true);startAppleMonitor()}catch(e){simulatePlayback(currentQueue[i].duration);setPlayingState(true)}}
+function startAppleMonitor(){clearPlayback();playbackInterval=setInterval(()=>{if(!musicInstance)return;const c=musicInstance.currentPlaybackTime,t=musicInstance.currentPlaybackDuration;if(t>0){document.getElementById('progress-bar').style.width=((c/t)*100)+'%';document.getElementById('current-time').textContent=fmt(c);document.getElementById('total-time').textContent=fmt(t)}if(musicInstance.playbackState===MusicKit.PlaybackStates.completed){clearPlayback();setTimeout(()=>skipTrack(),800)}},500)}
 
-function updateTotal() {
-    const t = phases[1].duration + phases[2].duration + phases[3].duration;
-    const h = Math.floor(t / 60), m = t % 60;
-    document.getElementById('total-duration').textContent = h > 0 ? `${h}h ${m}min` : `${m} min`;
-}
+// ── Spotify ─────────────────────────────
+async function loadSpotifyQueue(){showLoadingState();try{const q=buildSearchQuery(),r=await fetch('https://api.spotify.com/v1/search?q='+encodeURIComponent(q)+'&type=track&limit=25',{headers:{Authorization:'Bearer '+spotifyToken}});const d=await r.json(),t=d?.tracks?.items||[];currentQueue=t.length>0?t.map(mapSpotify):[...DEMO_TRACKS];loadTrack(0)}catch(e){console.error(e);currentQueue=[...DEMO_TRACKS];loadTrack(0)}}
+function mapSpotify(t){return{id:t.id,name:t.name,artist:t.artists.map(a=>a.name).join(', '),album:t.album?.name||'',duration:Math.round((t.duration_ms||0)/1000),artUrl:t.album?.images?.[0]?.url||'',previewUrl:t.preview_url||'',spotifyUri:t.uri}}
 
-// ── Playback ────────────────────────────────
-function loadTrack(i) {
-    clearPlayback();
-    const track = DEMO_TRACKS[i % DEMO_TRACKS.length];
-    document.getElementById('track-name').textContent = track.name;
-    document.getElementById('artist-name').textContent = track.artist;
-    document.getElementById('progress-bar').style.width = '0%';
-    document.getElementById('current-time').textContent = '0:00';
-    const m = Math.floor(track.duration / 60), s = track.duration % 60;
-    document.getElementById('total-time').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+// ── Playback ────────────────────────────
+function loadTrack(i){clearPlayback();currentTrackIndex=i%currentQueue.length;const t=currentQueue[currentTrackIndex];updateTrackUI(t);updateUpNext();simulatePlayback(t.duration);setPlayingState(true)}
+function simulatePlayback(s){clearPlayback();let p=0;document.getElementById('progress-bar').style.width='0%';document.getElementById('current-time').textContent='0:00';document.getElementById('total-time').textContent=fmt(s);playbackInterval=setInterval(()=>{p+=2;if(p>100)p=100;document.getElementById('progress-bar').style.width=p+'%';document.getElementById('current-time').textContent=fmt(Math.floor((p/100)*s));if(p>=100){clearPlayback();setTimeout(()=>skipTrack(),800)}},600)}
+function togglePlayPause(){if(isPlaying){if(serviceMode==='apple'&&musicInstance)musicInstance.pause();clearPlayback();setPlayingState(false)}else{if(serviceMode==='apple'&&musicInstance){musicInstance.play();startAppleMonitor()}else{const t=currentQueue[currentTrackIndex];if(t)simulatePlayback(t.duration)}setPlayingState(true)}}
+function skipTrack(){stopPlayback();const n=currentTrackIndex+1;if(serviceMode==='apple'&&musicInstance)loadAppleTrack(n);else loadTrack(n%currentQueue.length)}
+function previousTrack(){stopPlayback();const p=Math.max(0,currentTrackIndex-1);if(serviceMode==='apple'&&musicInstance)loadAppleTrack(p);else loadTrack(p)}
+function seekTrack(e){const p=e.offsetX/e.currentTarget.offsetWidth;document.getElementById('progress-bar').style.width=(p*100)+'%';if(serviceMode==='apple'&&musicInstance&&musicInstance.currentPlaybackDuration)musicInstance.seekToTime(p*musicInstance.currentPlaybackDuration)}
+function stopPlayback(){clearPlayback();if(serviceMode==='apple'&&musicInstance)try{musicInstance.stop()}catch(e){}setPlayingState(false)}
+function setPlayingState(p){isPlaying=p;document.getElementById('play-icon').style.display=p?'none':'block';document.getElementById('pause-icon').style.display=p?'block':'none'}
+function clearPlayback(){if(playbackInterval){clearInterval(playbackInterval);playbackInterval=null}}
 
-    document.getElementById('feedback-buttons').classList.remove('hidden');
-    document.getElementById('dislike-reason').classList.add('hidden');
-    document.getElementById('reason-input').value = '';
+// ── UI ──────────────────────────────────
+function updateTrackUI(t){document.getElementById('track-name').textContent=t.name;document.getElementById('artist-name').textContent=t.artist;document.getElementById('album-name').textContent=t.album||'';const img=document.getElementById('album-art-img'),ph=document.getElementById('album-art-placeholder');if(t.artUrl){img.src=t.artUrl;img.style.display='block';ph.style.display='none'}else{img.style.display='none';ph.style.display='block'}document.getElementById('feedback-buttons').style.display='flex';document.getElementById('dislike-reason').style.display='none';document.getElementById('reason-input').value='';document.getElementById('progress-bar').style.width='0%';document.getElementById('current-time').textContent='0:00';document.getElementById('total-time').textContent=fmt(t.duration)}
+function updateUpNext(){const c=document.getElementById('up-next'),l=document.getElementById('up-next-list'),u=currentQueue.slice(currentTrackIndex+1,currentTrackIndex+4);if(!u.length){c.style.display='none';return}c.style.display='block';l.innerHTML='';u.forEach((t,i)=>{const d=document.createElement('div');d.className='track-item';d.onclick=()=>{stopPlayback();if(serviceMode==='apple'&&musicInstance)loadAppleTrack(currentTrackIndex+1+i);else loadTrack(currentTrackIndex+1+i)};d.innerHTML=`<div style="width:36px;height:36px;border-radius:4px;overflow:hidden;background:var(--bg-warm);display:flex;align-items:center;justify-content:center;flex-shrink:0">${t.artUrl?'<img src="'+t.artUrl+'" style="width:100%;height:100%;object-fit:cover"/>':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="1"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>'}</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div><div style="font-size:12px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.artist}</div></div><span style="font-size:12px;color:var(--text-tertiary);flex-shrink:0;font-variant-numeric:tabular-nums">${fmt(t.duration)}</span>`;l.appendChild(d)})}
+function showLoadingState(){document.getElementById('track-name').textContent='Finding music…';document.getElementById('artist-name').textContent='Searching';document.getElementById('album-name').textContent='';document.getElementById('album-art-img').style.display='none';document.getElementById('album-art-placeholder').style.display='block'}
 
-    simulatePlayback(track.duration);
-}
+// ── Feedback ────────────────────────────
+function handleLike(){showToast('Liked — finding similar');setTimeout(()=>skipTrack(),1200)}
+function handleDislike(){document.getElementById('feedback-buttons').style.display='none';document.getElementById('dislike-reason').style.display='block'}
+function cancelDislike(){document.getElementById('dislike-reason').style.display='none';document.getElementById('feedback-buttons').style.display='flex'}
+function submitDislike(){showToast('Skipped — adjusting');setTimeout(()=>skipTrack(),800)}
 
-function simulatePlayback(totalSec) {
-    let pct = 0;
-    playbackInterval = setInterval(() => {
-        pct += 2;
-        if (pct > 100) pct = 100;
-        document.getElementById('progress-bar').style.width = pct + '%';
-        const elapsed = Math.floor((pct / 100) * totalSec);
-        document.getElementById('current-time').textContent =
-            `${Math.floor(elapsed/60)}:${(elapsed%60).toString().padStart(2,'0')}`;
-        if (pct >= 100) { clearPlayback(); setTimeout(nextTrack, 800); }
-    }, 600);
-}
+// ── Chips ───────────────────────────────
+function toggleChip(t,x){activeChips[t].has(x)?activeChips[t].delete(x):activeChips[t].add(x);renderChips(t)}
+function removeChip(t,x){activeChips[t].delete(x);renderChips(t)}
+function renderChips(t){const c=document.getElementById(t+'-chips');c.innerHTML='';activeChips[t].forEach(x=>{const d=document.createElement('div');d.className='chip-active';const s=x.replace(/'/g,"\\'");d.innerHTML=`${x}<button onclick="removeChip('${t}','${s}')">×</button>`;c.appendChild(d)})}
 
-function clearPlayback() { if (playbackInterval) { clearInterval(playbackInterval); playbackInterval = null; } }
-function nextTrack() { currentTrackIndex++; loadTrack(currentTrackIndex); }
+// ── Energy ──────────────────────────────
+function initEnergyPhases(){document.querySelectorAll('.energy-phase').forEach(el=>{const p=parseInt(el.dataset.phase),dots=el.querySelector('.energy-dots'),slider=el.querySelector('.phase-slider');for(let i=1;i<=5;i++){const b=document.createElement('button');b.className='energy-dot';b.dataset.level=i;b.onclick=()=>setEnergy(p,i);dots.appendChild(b)}slider.addEventListener('input',()=>{phases[p].duration=parseInt(slider.value);refreshPhase(p);updateTotal()});updateEnergyDots(p);refreshPhase(p)});updateTotal()}
+function setEnergy(p,l){phases[p].energy=l;updateEnergyDots(p);refreshPhase(p)}
+function updateEnergyDots(p){document.querySelector(`.energy-phase[data-phase="${p}"]`).querySelectorAll('.energy-dot').forEach(d=>{d.classList.toggle('selected',parseInt(d.dataset.level)===phases[p].energy)})}
+function refreshPhase(p){const el=document.querySelector(`.energy-phase[data-phase="${p}"]`);el.querySelector('.phase-duration').textContent=phases[p].duration+' min';el.querySelector('.phase-energy-label').textContent=ENERGY[phases[p].energy].label}
+function updateTotal(){const t=phases[1].duration+phases[2].duration+phases[3].duration,h=Math.floor(t/60),m=t%60;document.getElementById('total-duration').textContent=h>0?`${h}h ${m}min`:`${m} min`}
 
-// ── Feedback ────────────────────────────────
-function handleLike() { showToast('Liked — finding similar tracks', '#1db954'); setTimeout(nextTrack, 1500); }
-function handleDislike() {
-    document.getElementById('feedback-buttons').classList.add('hidden');
-    document.getElementById('dislike-reason').classList.remove('hidden');
-}
-function cancelDislike() {
-    document.getElementById('dislike-reason').classList.add('hidden');
-    document.getElementById('feedback-buttons').classList.remove('hidden');
-}
-function submitDislike() { showToast('Skipped — adjusting recommendations', '#535353'); setTimeout(nextTrack, 1200); }
+// ── Toast ───────────────────────────────
+function showToast(m){document.querySelectorAll('.toast').forEach(t=>t.remove());const el=document.createElement('div');el.className='toast';el.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:10px 24px;background:var(--text);color:white;font-size:13px;font-family:var(--sans);font-weight:500;border-radius:100px;z-index:999;animation:toastIn .3s var(--ease);letter-spacing:.01em';el.textContent=m;document.body.appendChild(el);setTimeout(()=>{el.style.animation='toastOut .3s var(--ease) forwards';setTimeout(()=>el.remove(),300)},2000)}
 
-// ── Toast ───────────────────────────────────
-function showToast(msg, bg) {
-    document.querySelectorAll('.toast').forEach(t => t.remove());
-    const el = document.createElement('div');
-    el.className = 'toast fixed top-5 left-1/2 px-5 py-2.5 rounded-full text-white text-sm font-medium shadow-lg z-50';
-    el.style.cssText = `background:${bg}; animation:toastIn 0.25s ease`;
-    el.textContent = msg;
-    document.body.appendChild(el);
-    setTimeout(() => { el.style.animation = 'toastOut 0.25s ease forwards'; setTimeout(() => el.remove(), 250); }, 1800);
-}
+function fmt(s){if(!s||s<0)return'0:00';const m=Math.floor(s/60),r=Math.floor(s%60);return`${m}:${r.toString().padStart(2,'0')}`}
 
-// ── Init ────────────────────────────────────
-showScreen('setup-screen');
-initEnergyPhases();
-renderChips('genre');
-renderChips('mood');
+(async function(){const h=await handleSpotifyCallback();if(!h)showScreen('connect-screen');initEnergyPhases();renderChips('genre');renderChips('mood')})();
 </script>
 </body>
 </html>
