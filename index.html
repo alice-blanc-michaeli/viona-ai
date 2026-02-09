@@ -2,39 +2,77 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Viona</title>
     <script src="https://js-cdn.music.apple.com/musickit/v3/musickit.js" crossorigin></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root{--bg:#f7f6f3;--bg-warm:#f0ede8;--surface:#fff;--text:#1a1a1a;--text-secondary:#8a8a8a;--text-tertiary:#b5b1ab;--border:#e8e5e1;--border-light:#f0ede8;--spotify:#1db954;--apple:#fc3c44;--serif:'Cormorant Garamond',Georgia,serif;--sans:'Outfit',-apple-system,sans-serif;--radius:4px;--radius-lg:8px;--ease:cubic-bezier(.25,.1,.25,1)}
-        *{box-sizing:border-box;margin:0;padding:0}html{font-size:16px;-webkit-font-smoothing:antialiased}
-        body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-weight:400;letter-spacing:-.01em;line-height:1.6}
+        /* ── VARIABLES ───────────────────────────── */
+        :root{
+            --bg:#f7f6f3;--bg-warm:#f0ede8;--surface:#fff;
+            --text:#1a1a1a;--text-secondary:#8a8a8a;--text-tertiary:#b5b1ab;
+            --border:#e8e5e1;--border-light:#f0ede8;
+            --spotify:#1db954;--apple:#fc3c44;
+            --serif:'Cormorant Garamond',Georgia,serif;
+            --sans:'Outfit',-apple-system,sans-serif;
+            --radius:4px;--radius-lg:8px;
+            --ease:cubic-bezier(.25,.1,.25,1);
+            /* [MOBILE] safe-area insets for iOS notch / home-indicator */
+            --safe-top:env(safe-area-inset-top,0px);
+            --safe-bottom:env(safe-area-inset-bottom,0px);
+            --safe-left:env(safe-area-inset-left,0px);
+            --safe-right:env(safe-area-inset-right,0px);
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{font-size:16px;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+        body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;font-weight:400;letter-spacing:-.01em;line-height:1.6;overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent}
+
         .display{font-family:var(--serif);font-weight:500;letter-spacing:-.02em;line-height:1.15}
-        .display-lg{font-size:clamp(2.25rem,5vw,3.5rem)}.display-md{font-size:clamp(1.75rem,3.5vw,2.5rem)}.display-sm{font-size:clamp(1.25rem,2.5vw,1.75rem)}
+        .display-lg{font-size:clamp(2.25rem,5vw,3.5rem)}
+        .display-md{font-size:clamp(1.75rem,3.5vw,2.5rem)}
+        .display-sm{font-size:clamp(1.25rem,2.5vw,1.75rem)}
         .label{font-family:var(--sans);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--text-secondary)}
         .body-sm{font-size:13px;color:var(--text-secondary);font-weight:400}
-        .screen{display:none;opacity:0;transition:opacity .6s var(--ease)}.screen.active{display:block;opacity:1}
+
+        .screen{display:none;opacity:0;transition:opacity .6s var(--ease)}
+        .screen.active{display:block;opacity:1}
+
         @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
         @keyframes toastIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
         @keyframes toastOut{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-10px)}}
-        .rise{animation:rise .7s var(--ease) both}.rise-1{animation-delay:.08s}.rise-2{animation-delay:.16s}.rise-3{animation-delay:.24s}.rise-4{animation-delay:.32s}.rise-5{animation-delay:.4s}.rise-6{animation-delay:.48s}
-        .container{max-width:640px;margin:0 auto;padding:0 28px}.section{padding:56px 0}.divider{height:1px;background:var(--border);margin:0}
-        .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px}
-        .input{width:100%;padding:14px 0;background:0 0;border:none;border-bottom:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:15px;outline:none;transition:border-color .3s var(--ease);border-radius:0}
-        .input:focus{border-color:var(--text)}.input::placeholder{color:var(--text-tertiary)}textarea.input{resize:none;line-height:1.5}
-        .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 32px;font-family:var(--sans);font-size:13px;font-weight:600;letter-spacing:.04em;border:none;cursor:pointer;transition:all .35s var(--ease);text-transform:uppercase}
-        .btn-primary{background:var(--text);color:#fff;border-radius:var(--radius);width:100%}.btn-primary:hover{opacity:.85}.btn-primary:active{transform:scale(.99)}.btn-primary:disabled{opacity:.25;cursor:not-allowed}
-        .btn-ghost{background:0 0;color:var(--text-secondary);padding:10px 0;border-radius:0}.btn-ghost:hover{color:var(--text)}
-        .btn-service{width:100%;padding:18px 24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);font-family:var(--sans);font-size:14px;font-weight:500;color:var(--text);cursor:pointer;transition:all .3s var(--ease);display:flex;align-items:center;gap:14px;text-align:left}
+        .rise{animation:rise .7s var(--ease) both}
+        .rise-1{animation-delay:.08s}.rise-2{animation-delay:.16s}.rise-3{animation-delay:.24s}
+        .rise-4{animation-delay:.32s}.rise-5{animation-delay:.4s}.rise-6{animation-delay:.48s}
+
+        /* [MOBILE] Responsive container with safe-area */
+        .container{max-width:640px;margin:0 auto;padding:0 max(20px,var(--safe-left));padding-right:max(20px,var(--safe-right))}
+        .section{padding:48px 0}
+        .divider{height:1px;background:var(--border);margin:0}
+        .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px}
+
+        .input{width:100%;padding:14px 0;background:0 0;border:none;border-bottom:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:16px;outline:none;transition:border-color .3s var(--ease);border-radius:0;-webkit-appearance:none}
+        .input:focus{border-color:var(--text)}
+        .input::placeholder{color:var(--text-tertiary)}
+        textarea.input{resize:none;line-height:1.5}
+
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 32px;font-family:var(--sans);font-size:13px;font-weight:600;letter-spacing:.04em;border:none;cursor:pointer;transition:all .35s var(--ease);text-transform:uppercase;-webkit-tap-highlight-color:transparent}
+        .btn-primary{background:var(--text);color:#fff;border-radius:var(--radius);width:100%}
+        .btn-primary:hover{opacity:.85}.btn-primary:active{transform:scale(.99)}
+        .btn-primary:disabled{opacity:.25;cursor:not-allowed}
+        .btn-ghost{background:0 0;color:var(--text-secondary);padding:10px 0;border-radius:0}
+        .btn-ghost:hover{color:var(--text)}
+
+        .btn-service{width:100%;padding:18px 24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);font-family:var(--sans);font-size:14px;font-weight:500;color:var(--text);cursor:pointer;transition:all .3s var(--ease);display:flex;align-items:center;gap:14px;text-align:left;-webkit-tap-highlight-color:transparent}
         .btn-service:hover{border-color:var(--text)}.btn-service:active{transform:scale(.995)}
         .svc-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-        .chip-btn{padding:8px 16px;background:0 0;border:1px solid var(--border);border-radius:100px;font-family:var(--sans);font-size:13px;color:var(--text-secondary);cursor:pointer;transition:all .25s var(--ease)}
+
+        .chip-btn{padding:8px 16px;background:0 0;border:1px solid var(--border);border-radius:100px;font-family:var(--sans);font-size:13px;color:var(--text-secondary);cursor:pointer;transition:all .25s var(--ease);-webkit-tap-highlight-color:transparent}
         .chip-btn:hover{border-color:var(--text);color:var(--text)}
         .chip-active{padding:8px 16px;background:var(--text);border:1px solid var(--text);border-radius:100px;font-family:var(--sans);font-size:13px;font-weight:500;color:#fff;display:inline-flex;align-items:center;gap:8px;animation:fadeIn .25s var(--ease)}
         .chip-active button{background:0 0;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:13px;padding:0;line-height:1;transition:color .2s}.chip-active button:hover{color:#fff}
-        .energy-dot{width:22px;height:22px;border-radius:var(--radius);border:1.5px solid var(--border);background:0 0;cursor:pointer;transition:all .25s var(--ease);position:relative}
+
+        .energy-dot{width:22px;height:22px;border-radius:var(--radius);border:1.5px solid var(--border);background:0 0;cursor:pointer;transition:all .25s var(--ease);position:relative;-webkit-tap-highlight-color:transparent}
         .energy-dot:hover{border-color:var(--text-secondary)}
         .energy-dot.selected{border-color:transparent}.energy-dot.selected::after{content:'';position:absolute;inset:2px;border-radius:2px}
         .energy-dot[data-level="1"].selected{border-color:#6b9dce}.energy-dot[data-level="1"].selected::after{background:#6b9dce}
@@ -42,26 +80,104 @@
         .energy-dot[data-level="3"].selected{border-color:#c9a84c}.energy-dot[data-level="3"].selected::after{background:#c9a84c}
         .energy-dot[data-level="4"].selected{border-color:#d08350}.energy-dot[data-level="4"].selected::after{background:#d08350}
         .energy-dot[data-level="5"].selected{border-color:#c45a5a}.energy-dot[data-level="5"].selected::after{background:#c45a5a}
+
         input[type=range]{-webkit-appearance:none;appearance:none;height:1px;background:var(--border);outline:none;width:100%}
-        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--text);cursor:pointer;transition:transform .2s var(--ease)}
-        input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
-        input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--text);border:none;cursor:pointer}
-        .progress-track{height:1px;background:var(--border);cursor:pointer;transition:height .2s var(--ease)}.progress-track:hover{height:3px}
-        .progress-fill{height:100%;background:var(--text);transition:width .5s linear;border-radius:1px}
-        .play-btn{width:56px;height:56px;border-radius:50%;background:var(--text);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s var(--ease)}.play-btn:hover{opacity:.8}.play-btn:active{transform:scale(.95)}
-        .ctrl-btn{width:40px;height:40px;border-radius:50%;background:0 0;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:color .25s var(--ease)}.ctrl-btn:hover{color:var(--text)}
-        .fb-btn{width:48px;height:48px;border-radius:50%;background:0 0;border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:all .3s var(--ease)}.fb-btn:hover{border-color:var(--text);color:var(--text)}.fb-btn:active{transform:scale(.92)}
-        .track-item{display:flex;align-items:center;gap:14px;padding:12px 0;cursor:pointer;transition:opacity .2s;border-bottom:1px solid var(--border-light)}.track-item:last-child{border-bottom:none}.track-item:hover{opacity:.65}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--text);cursor:pointer;transition:transform .2s var(--ease)}
+        input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.15)}
+        input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--text);border:none;cursor:pointer}
+
+        .progress-track{height:3px;background:var(--border);cursor:pointer;transition:height .2s var(--ease);border-radius:2px}
+        .progress-track:hover{height:5px}
+        .progress-fill{height:100%;background:var(--text);transition:width .5s linear;border-radius:2px}
+        .play-btn{width:56px;height:56px;border-radius:50%;background:var(--text);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s var(--ease);-webkit-tap-highlight-color:transparent}
+        .play-btn:hover{opacity:.8}.play-btn:active{transform:scale(.95)}
+        .ctrl-btn{width:44px;height:44px;border-radius:50%;background:0 0;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:color .25s var(--ease);-webkit-tap-highlight-color:transparent}
+        .ctrl-btn:hover{color:var(--text)}
+
+        /* [CHANGED] Feedback buttons – larger tap targets + active states */
+        .fb-btn{width:48px;height:48px;border-radius:50%;background:0 0;border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:all .3s var(--ease);-webkit-tap-highlight-color:transparent}
+        .fb-btn:hover{border-color:var(--text);color:var(--text)}.fb-btn:active{transform:scale(.92)}
+        /* [CHANGED] Liked / disliked active visual states */
+        .fb-btn.liked{border-color:var(--text);background:var(--text)}
+        .fb-btn.liked svg{stroke:#fff;fill:#fff}
+        .fb-btn.disliked{border-color:#c45a5a;background:rgba(196,90,90,.1)}
+        .fb-btn.disliked svg{stroke:#c45a5a}
+
+        .track-item{display:flex;align-items:center;gap:14px;padding:12px 0;cursor:pointer;transition:opacity .2s;border-bottom:1px solid var(--border-light);-webkit-tap-highlight-color:transparent}
+        .track-item:last-child{border-bottom:none}.track-item:hover{opacity:.65}
         ::-webkit-scrollbar{width:0}
         .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
-        .badge-spotify{background:#1db95415;color:var(--spotify)}.badge-apple{background:#fc3c4415;color:var(--apple)}.badge-demo{background:var(--bg-warm);color:var(--text-tertiary)}
+        .badge-spotify{background:#1db95415;color:var(--spotify)}
+        .badge-apple{background:#fc3c4415;color:var(--apple)}
+        .badge-demo{background:var(--bg-warm);color:var(--text-tertiary)}
+
+        /* [MOBILE] Up Next scrollable area */
+        .up-next-list-scroll{
+            max-height:280px;
+            overflow-y:auto;
+            -webkit-overflow-scrolling:touch;
+            overscroll-behavior:contain;
+        }
+        /* [MOBILE] Session tuned microcopy */
+        .session-tuned{
+            font-size:10px;color:var(--text-tertiary);
+            letter-spacing:.06em;text-transform:uppercase;
+            text-align:center;margin-top:4px;
+            animation:fadeIn .5s var(--ease);
+        }
+        /* Dislike reason — small centered overlay/modal */
+        .dislike-overlay{
+            position:fixed;inset:0;z-index:900;
+            display:none;align-items:center;justify-content:center;
+            padding:20px;
+        }
+        .dislike-overlay.open{display:flex}
+        .dislike-backdrop{
+            position:absolute;inset:0;
+            background:rgba(0,0,0,.18);
+            -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+        }
+        .dislike-panel{
+            position:relative;z-index:1;
+            background:var(--surface);border:1px solid var(--border);
+            border-radius:var(--radius-lg);padding:24px;
+            width:100%;max-width:360px;
+            animation:rise .35s var(--ease) both;
+            box-shadow:0 8px 32px rgba(0,0,0,.08);
+        }
+        /* Feedback button debounce disabled state */
+        .fb-btn.debounced{pointer-events:none;opacity:.5}
+
+        /* ── MOBILE RESPONSIVE ──────────────────── */
+        @media(max-width:480px){
+            .container{padding-left:max(16px,var(--safe-left));padding-right:max(16px,var(--safe-right))}
+            .section{padding:36px 0}
+            .card{padding:20px}
+            .display-lg{font-size:2rem}
+            .display-md{font-size:1.6rem}
+            .display-sm{font-size:1.2rem}
+            .btn-service{padding:16px 18px;gap:12px}
+            .chip-btn,.chip-active{padding:7px 14px;font-size:12px}
+            .energy-dot{width:28px;height:28px}
+            .fb-btn{width:52px;height:52px}
+            .play-btn{width:60px;height:60px}
+            .ctrl-btn{width:48px;height:48px}
+            .up-next-list-scroll{max-height:240px}
+        }
+        /* [MOBILE] Short-height phones (landscape or small) */
+        @media(max-height:680px){
+            #playback-screen .container{padding-top:max(16px,var(--safe-top));padding-bottom:max(16px,var(--safe-bottom))}
+        }
+        @media(max-height:560px){
+            #album-art-container{width:min(180px,50vw)!important}
+        }
     </style>
 </head>
 <body>
 
 <!-- ══════════ CONNECT ══════════ -->
 <div id="connect-screen" class="screen active">
-<div class="container" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding-top:60px;padding-bottom:60px">
+<div class="container" style="min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;justify-content:center;padding-top:max(60px,var(--safe-top));padding-bottom:max(60px,var(--safe-bottom))">
     <div class="rise" style="margin-bottom:64px">
         <p class="label" style="margin-bottom:16px">Est. 2026</p>
         <h1 class="display display-lg" style="margin-bottom:12px">Viona</h1>
@@ -84,9 +200,9 @@
         <div class="card">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px"><div class="svc-dot" style="background:var(--spotify);width:8px;height:8px"></div><span class="label" style="color:var(--spotify)">Spotify</span></div>
             <label class="label" style="display:block;margin-bottom:8px">Client ID</label>
-            <input id="spotify-client-id" type="text" class="input" placeholder="Paste your Spotify Client ID" style="margin-bottom:16px;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:13px" oninput="checkSpotifyReady()"/>
+            <input id="spotify-client-id" type="text" class="input" placeholder="Paste your Spotify Client ID" style="margin-bottom:16px;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:16px" oninput="checkSpotifyReady()"/>
             <label class="label" style="display:block;margin-bottom:8px">Redirect URI</label>
-            <input id="spotify-redirect" type="text" class="input" placeholder="http://localhost:8080/callback" style="margin-bottom:20px;font-size:13px"/>
+            <input id="spotify-redirect" type="text" class="input" placeholder="http://localhost:8080/callback" style="margin-bottom:20px;font-size:16px"/>
             <p class="body-sm" style="font-size:11px;margin-bottom:20px;line-height:1.6">Create an app at <a href="https://developer.spotify.com/dashboard" target="_blank" style="color:var(--text);text-decoration:underline">developer.spotify.com</a> → Copy your Client ID → Add a Redirect URI<br><span style="color:var(--text-tertiary)">Note: New Spotify app registration is currently on hold.</span></p>
             <button id="spotify-connect-btn" class="btn btn-primary" onclick="connectSpotify()" disabled>Connect</button>
             <div id="spotify-error" style="display:none;margin-top:12px;font-size:12px;color:#c45a5a;text-align:center"></div>
@@ -97,7 +213,7 @@
         <div class="card">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px"><div class="svc-dot" style="background:var(--apple);width:8px;height:8px"></div><span class="label" style="color:var(--apple)">Apple Music</span></div>
             <label class="label" style="display:block;margin-bottom:8px">Developer Token (JWT)</label>
-            <textarea id="apple-token" rows="3" class="input" placeholder="Paste your MusicKit developer token" style="font-family:'SF Mono',Monaco,Consolas,monospace;font-size:12px;margin-bottom:16px" oninput="checkAppleReady()"></textarea>
+            <textarea id="apple-token" rows="3" class="input" placeholder="Paste your MusicKit developer token" style="font-family:'SF Mono',Monaco,Consolas,monospace;font-size:16px;margin-bottom:16px" oninput="checkAppleReady()"></textarea>
             <p class="body-sm" style="font-size:11px;margin-bottom:20px;line-height:1.6">Join <a href="https://developer.apple.com/programs/" target="_blank" style="color:var(--text);text-decoration:underline">Apple Developer Program</a> ($99/yr) → Create MusicKit key → Generate JWT</p>
             <button id="apple-connect-btn" class="btn btn-primary" onclick="connectAppleMusic()" disabled>Connect</button>
             <div id="apple-error" style="display:none;margin-top:12px;font-size:12px;color:#c45a5a;text-align:center"></div>
@@ -109,7 +225,7 @@
 
 <!-- ══════════ SETUP ══════════ -->
 <div id="setup-screen" class="screen">
-<div class="container section">
+<div class="container section" style="padding-top:max(48px,var(--safe-top));padding-bottom:max(48px,var(--safe-bottom))">
     <div class="rise" style="margin-bottom:48px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><p class="label">Viona</p><span id="connection-badge" class="badge"></span></div>
         <h1 class="display display-md">Create your vibe</h1>
@@ -163,30 +279,35 @@
 
 <!-- ══════════ PLAYBACK ══════════ -->
 <div id="playback-screen" class="screen">
-<div class="container" style="min-height:100vh;display:flex;flex-direction:column;padding-top:40px;padding-bottom:40px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:48px" class="rise">
+<div class="container" style="min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding-top:max(32px,var(--safe-top));padding-bottom:max(24px,var(--safe-bottom))">
+    <!-- Header row -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px" class="rise">
         <button class="btn btn-ghost" onclick="backToSetup()" style="padding:0;font-size:12px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right:6px"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Edit</button>
         <span class="label" style="color:var(--text-tertiary)">Now Playing</span>
     </div>
-    <div class="rise rise-1" style="display:flex;justify-content:center;margin-bottom:48px">
-        <div id="album-art-container" style="width:min(300px,72vw);aspect-ratio:1;background:var(--bg-warm);border-radius:var(--radius-lg);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center">
+    <!-- Album art -->
+    <div class="rise rise-1" style="display:flex;justify-content:center;margin-bottom:32px">
+        <div id="album-art-container" style="width:min(280px,65vw);aspect-ratio:1;background:var(--bg-warm);border-radius:var(--radius-lg);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center">
             <img id="album-art-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"/>
             <svg id="album-art-placeholder" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="1"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
         </div>
     </div>
-    <div class="rise rise-2" style="text-align:center;margin-bottom:40px">
-        <h2 id="track-name" class="display display-sm" style="margin-bottom:4px">Waiting for music</h2>
-        <p id="artist-name" style="font-size:14px;color:var(--text-secondary);margin-bottom:2px">—</p>
-        <p id="album-name" style="font-size:12px;color:var(--text-tertiary)"></p>
+    <!-- Track info -->
+    <div class="rise rise-2" style="text-align:center;margin-bottom:28px">
+        <h2 id="track-name" class="display display-sm" style="margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Waiting for music</h2>
+        <p id="artist-name" style="font-size:14px;color:var(--text-secondary);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</p>
+        <p id="album-name" style="font-size:12px;color:var(--text-tertiary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></p>
     </div>
-    <div class="rise rise-3" style="margin-bottom:32px">
+    <!-- Progress -->
+    <div class="rise rise-3" style="margin-bottom:24px">
         <div class="progress-track" onclick="seekTrack(event)"><div id="progress-bar" class="progress-fill" style="width:0%"></div></div>
         <div style="display:flex;justify-content:space-between;margin-top:8px">
             <span id="current-time" style="font-size:11px;color:var(--text-tertiary);font-variant-numeric:tabular-nums">0:00</span>
             <span id="total-time" style="font-size:11px;color:var(--text-tertiary);font-variant-numeric:tabular-nums">0:00</span>
         </div>
     </div>
-    <div class="rise rise-4" style="display:flex;align-items:center;justify-content:center;gap:24px;margin-bottom:40px">
+    <!-- Playback controls -->
+    <div class="rise rise-4" style="display:flex;align-items:center;justify-content:center;gap:24px;margin-bottom:28px">
         <button class="ctrl-btn" onclick="previousTrack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
         <button id="play-pause-btn" class="play-btn" onclick="togglePlayPause()">
             <svg id="play-icon" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
@@ -194,34 +315,348 @@
         </button>
         <button class="ctrl-btn" onclick="skipTrack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
     </div>
-    <div class="rise rise-5" style="margin-bottom:32px">
+    <!-- [CHANGED] Feedback buttons — always visible, with liked/disliked state -->
+    <div class="rise rise-5" style="margin-bottom:16px">
         <div id="feedback-buttons" style="display:flex;align-items:center;justify-content:center;gap:20px">
-            <button class="fb-btn" onclick="handleDislike()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3zm7-13h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg></button>
-            <button class="fb-btn" onclick="handleLike()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg></button>
+            <button id="dislike-btn" class="fb-btn" onclick="handleDislike()" title="Not for me">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3zm7-13h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>
+            </button>
+            <button id="like-btn" class="fb-btn" onclick="handleLike()" title="More like this">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
+            </button>
         </div>
-        <div id="dislike-reason" style="display:none;max-width:360px;margin:0 auto">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><p class="body-sm">What's off?</p><button onclick="cancelDislike()" style="background:0 0;border:none;cursor:pointer;color:var(--text-tertiary);font-size:18px;line-height:1">×</button></div>
-            <input id="reason-input" type="text" class="input" placeholder="Too slow, not my style..." style="margin-bottom:16px"/>
-            <button onclick="submitDislike()" class="btn btn-primary" style="font-size:12px;padding:12px">Skip & Next</button>
-        </div>
+        <!-- [CHANGED] Session tuned microcopy -->
+        <p id="session-tuned-msg" class="session-tuned" style="display:none"></p>
     </div>
-    <div id="up-next" style="display:none;flex:1"><div class="divider" style="margin-bottom:24px"></div><p class="label" style="margin-bottom:16px">Up Next</p><div id="up-next-list"></div></div>
-    <div style="margin-top:auto;padding-top:32px;text-align:center"><p style="font-size:10px;color:var(--text-tertiary);letter-spacing:.08em;text-transform:uppercase">Viona is learning your preferences</p></div>
+    <!-- [CHANGED] Up Next — scrollable, shows up to 8 tracks -->
+    <div id="up-next" style="display:none;flex:1;min-height:0">
+        <div class="divider" style="margin-bottom:20px"></div>
+        <p class="label" style="margin-bottom:12px">Up Next</p>
+        <div id="up-next-list" class="up-next-list-scroll" style="padding-bottom:max(8px,var(--safe-bottom))"></div>
+    </div>
+    <!-- Footer -->
+    <div style="margin-top:auto;padding-top:20px;text-align:center"><p style="font-size:10px;color:var(--text-tertiary);letter-spacing:.08em;text-transform:uppercase">Viona is learning your preferences</p></div>
 </div>
 </div>
 
+<!-- ══════════ DISLIKE OVERLAY (fixed, outside page flow) ══════════ -->
+<div id="dislike-overlay" class="dislike-overlay" role="dialog" aria-label="Feedback">
+    <div class="dislike-backdrop" onclick="cancelDislike()"></div>
+    <div class="dislike-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <p class="body-sm" style="font-weight:500;color:var(--text)">What's off?</p>
+            <button onclick="cancelDislike()" style="background:0 0;border:none;cursor:pointer;color:var(--text-tertiary);font-size:22px;line-height:1;padding:4px;-webkit-tap-highlight-color:transparent" aria-label="Close">×</button>
+        </div>
+        <input id="reason-input" type="text" class="input" placeholder="Too slow, not my style..." style="margin-bottom:12px"/>
+        <p style="font-size:11px;color:var(--text-tertiary);margin-bottom:14px;text-align:center">Song keeps playing — only the queue adjusts</p>
+        <button onclick="submitDislike()" class="btn btn-primary" style="font-size:12px;padding:12px">Send Feedback</button>
+    </div>
+</div>
+
 <script>
+/* ═══════════════════════════════════════════════════════════════
+   VIONA — AI-Curated Music Session Player
+   ═══════════════════════════════════════════════════════════════ */
+
 const ENERGY={1:{label:'Very Low',color:'#6b9dce'},2:{label:'Low',color:'#7bb87e'},3:{label:'Medium',color:'#c9a84c'},4:{label:'High',color:'#d08350'},5:{label:'Very High',color:'#c45a5a'}};
-const DEMO_TRACKS=[{name:'Come Away With Me',artist:'Norah Jones',album:'Come Away With Me',duration:198,artUrl:''},{name:'Feeling Good',artist:'Nina Simone',album:'I Put a Spell on You',duration:175,artUrl:''},{name:'Blue in Green',artist:'Miles Davis',album:'Kind of Blue',duration:328,artUrl:''},{name:'The Girl from Ipanema',artist:'Stan Getz',album:'Getz/Gilberto',duration:212,artUrl:''},{name:'Corcovado',artist:'João Gilberto',album:'Getz/Gilberto',duration:198,artUrl:''}];
+
+/* [CHANGED] Expanded demo library with genre/mood/energy metadata for scoring */
+const DEMO_TRACKS=[
+    {id:'d1',name:'Come Away With Me',artist:'Norah Jones',album:'Come Away With Me',duration:198,artUrl:'',genre:'Jazz',mood:'Chill',energy:2},
+    {id:'d2',name:'Feeling Good',artist:'Nina Simone',album:'I Put a Spell on You',duration:175,artUrl:'',genre:'Jazz',mood:'Energetic',energy:3},
+    {id:'d3',name:'Blue in Green',artist:'Miles Davis',album:'Kind of Blue',duration:328,artUrl:'',genre:'Jazz',mood:'Melancholy',energy:1},
+    {id:'d4',name:'The Girl from Ipanema',artist:'Stan Getz',album:'Getz/Gilberto',duration:212,artUrl:'',genre:'Jazz',mood:'Chill',energy:2},
+    {id:'d5',name:'Corcovado',artist:'João Gilberto',album:'Getz/Gilberto',duration:198,artUrl:'',genre:'Jazz',mood:'Romantic',energy:2},
+    {id:'d6',name:'So What',artist:'Miles Davis',album:'Kind of Blue',duration:564,artUrl:'',genre:'Jazz',mood:'Chill',energy:2},
+    {id:'d7',name:'Fly Me to the Moon',artist:'Frank Sinatra',album:'It Might as Well Be Swing',duration:150,artUrl:'',genre:'Jazz',mood:'Romantic',energy:3},
+    {id:'d8',name:'My Funny Valentine',artist:'Chet Baker',album:'Chet Baker Sings',duration:160,artUrl:'',genre:'Jazz',mood:'Romantic',energy:1},
+    {id:'d9',name:'Take Five',artist:'Dave Brubeck',album:'Time Out',duration:324,artUrl:'',genre:'Jazz',mood:'Chill',energy:3},
+    {id:'d10',name:'Autumn Leaves',artist:'Bill Evans',album:'Portrait in Jazz',duration:304,artUrl:'',genre:'Jazz',mood:'Melancholy',energy:2},
+    {id:'d11',name:'Misty',artist:'Erroll Garner',album:'Concert by the Sea',duration:180,artUrl:'',genre:'Jazz',mood:'Romantic',energy:2},
+    {id:'d12',name:'Night and Day',artist:'Ella Fitzgerald',album:'Ella Fitzgerald Sings the Cole Porter Songbook',duration:198,artUrl:'',genre:'Jazz',mood:'Chill',energy:3},
+    {id:'d13',name:'Round Midnight',artist:'Thelonious Monk',album:"Monk's Music",duration:340,artUrl:'',genre:'Jazz',mood:'Melancholy',energy:1},
+    {id:'d14',name:'Stolen Moments',artist:'Oliver Nelson',album:'The Blues and the Abstract Truth',duration:556,artUrl:'',genre:'Jazz',mood:'Chill',energy:2},
+    {id:'d15',name:'Alfie',artist:'Dionne Warwick',album:'Here Where There Is Love',duration:170,artUrl:'',genre:'Pop',mood:'Romantic',energy:2},
+];
 
 const phases={1:{duration:20,energy:2},2:{duration:40,energy:4},3:{duration:20,energy:1}};
 const activeChips={genre:new Set(['Jazz']),mood:new Set(['Chill'])};
 let currentTrackIndex=0,isPlaying=false,serviceMode='demo',musicInstance=null,spotifyToken=null,playbackInterval=null,currentQueue=[];
+let _feedbackDebounce=false; // debounce flag for rapid like/dislike taps
 
-function showScreen(id){document.querySelectorAll('.screen').forEach(s=>{s.style.display='none';s.classList.remove('active')});const el=document.getElementById(id);el.style.display='block';requestAnimationFrame(()=>{el.classList.add('active');window.scrollTo(0,0)})}
+/* ═══════════════════════════════════════════════════════════════
+   [NEW] PREFERENCE ENGINE
+   ─────────────────────────────────────────────────────────────
+   In-memory preference model that accumulates like/dislike signals
+   and re-ranks the upcoming queue without interrupting playback.
 
-// ── Connect ─────────────────────────────
-function showServiceSetup(s){document.getElementById('spotify-setup').style.display=s==='spotify'?'block':'none';document.getElementById('apple-setup').style.display=s==='apple'?'block':'none'}
+   SCORING WEIGHT TUNING: adjust the constants in scoreTrack().
+   ═══════════════════════════════════════════════════════════════ */
+const preferences = {
+    likedTrackIds: new Set(),
+    dislikedTrackIds: new Set(),
+    likedArtists: new Map(),   // artist → positive weight
+    dislikedArtists: new Map(),// artist → negative weight
+    likedGenres: new Map(),
+    dislikedGenres: new Map(),
+    likedMoods: new Map(),
+    dislikedMoods: new Map(),
+    reasonSignals: [],         // keywords extracted from dislike reasons
+    consecutiveDislikes: 0,    // track how many dislikes in a row
+};
+
+/**
+ * recordFeedback(track, type, reason?)
+ * Records a like or dislike for the given track and updates preference maps.
+ * Does NOT affect playback. Persists to localStorage.
+ */
+function recordFeedback(track, type, reason) {
+    const artist = (track.artist || '').toLowerCase();
+    const genre = (track.genre || inferGenre(track)).toLowerCase();
+    const mood = (track.mood || inferMood(track)).toLowerCase();
+
+    if (type === 'like') {
+        preferences.likedTrackIds.add(track.id || track.name);
+        preferences.dislikedTrackIds.delete(track.id || track.name); // remove conflict
+        incrementMap(preferences.likedArtists, artist, 1);
+        if (genre) incrementMap(preferences.likedGenres, genre, 1);
+        if (mood) incrementMap(preferences.likedMoods, mood, 1);
+        preferences.consecutiveDislikes = 0;
+    } else if (type === 'dislike') {
+        preferences.dislikedTrackIds.add(track.id || track.name);
+        preferences.likedTrackIds.delete(track.id || track.name);
+        incrementMap(preferences.dislikedArtists, artist, 1);
+        if (genre) incrementMap(preferences.dislikedGenres, genre, 1);
+        if (mood) incrementMap(preferences.dislikedMoods, mood, 1);
+        preferences.consecutiveDislikes++;
+        if (reason && reason.trim()) {
+            const keywords = reason.toLowerCase().split(/[\s,;.]+/).filter(w => w.length > 2);
+            preferences.reasonSignals.push(...keywords);
+        }
+    }
+    savePreferences(); // persist
+}
+
+function incrementMap(map, key, val) {
+    if (!key) return;
+    map.set(key, (map.get(key) || 0) + val);
+}
+
+/** Infer genre from track metadata text (name, artist, album) */
+function inferGenre(track) {
+    const text = `${track.name} ${track.artist} ${track.album || ''}`.toLowerCase();
+    const genreWords = ['jazz','pop','indie','electronic','classical','r&b','soul','rock','folk','blues','hip-hop','latin','bossa'];
+    for (const g of genreWords) { if (text.includes(g)) return g; }
+    // fall back to session genres
+    return [...activeChips.genre][0] || '';
+}
+
+/** Infer mood from track metadata text */
+function inferMood(track) {
+    const text = `${track.name} ${track.artist} ${track.album || ''}`.toLowerCase();
+    const moodWords = {chill:['chill','calm','relax','easy','soft'],romantic:['love','heart','romance','kiss','dream'],energetic:['energy','dance','fire','wild','fast'],melancholy:['blue','sad','rain','cry','alone','dark','night','midnight']};
+    for (const [mood, words] of Object.entries(moodWords)) { if (words.some(w => text.includes(w))) return mood; }
+    return [...activeChips.mood][0] || '';
+}
+
+/**
+ * scoreTrack(track)
+ * Returns a numeric score for ranking a track in the upcoming queue.
+ *
+ * ──── TUNING WEIGHTS ────────────────────────────────────────────
+ * Adjust these constants to change how aggressively feedback affects the queue.
+ */
+function scoreTrack(track) {
+    /* ── WEIGHTS (tweak these) ──────────── */
+    const W_LIKED_ARTIST   =  3.0;  // bonus per like-count for matching artist
+    const W_DISLIKED_ARTIST = -4.0;  // penalty per dislike-count for matching artist
+    const W_LIKED_GENRE    =  2.0;
+    const W_DISLIKED_GENRE = -2.5;
+    const W_LIKED_MOOD     =  1.5;
+    const W_DISLIKED_MOOD  = -2.0;
+    const W_LIKED_TRACK    =  5.0;   // bonus if this exact track was liked before (re-queue)
+    const W_DISLIKED_TRACK = -100;   // hard penalty — effectively remove from queue
+    const W_SESSION_GENRE  =  1.0;   // bonus if track matches session genres
+    const W_SESSION_MOOD   =  0.8;   // bonus if track matches session moods
+    const W_REASON_PENALTY = -1.0;   // penalty per matching reason keyword
+    const W_EXPLORATION    =  0.3;   // small random factor
+    const W_WIDEN_ON_DISLIKES = 0.15; // extra exploration per consecutive dislike
+    /* ──────────────────────────────────── */
+
+    let score = 0;
+    const trackId = track.id || track.name;
+    const artist = (track.artist || '').toLowerCase();
+    const genre = (track.genre || inferGenre(track)).toLowerCase();
+    const mood = (track.mood || inferMood(track)).toLowerCase();
+    const textBlob = `${track.name} ${track.artist} ${track.album || ''}`.toLowerCase();
+
+    // Exact-track feedback
+    if (preferences.likedTrackIds.has(trackId)) score += W_LIKED_TRACK;
+    if (preferences.dislikedTrackIds.has(trackId)) score += W_DISLIKED_TRACK;
+
+    // Artist affinity
+    if (artist && preferences.likedArtists.has(artist))
+        score += preferences.likedArtists.get(artist) * W_LIKED_ARTIST;
+    if (artist && preferences.dislikedArtists.has(artist))
+        score += preferences.dislikedArtists.get(artist) * W_DISLIKED_ARTIST;
+
+    // Genre affinity
+    if (genre && preferences.likedGenres.has(genre))
+        score += preferences.likedGenres.get(genre) * W_LIKED_GENRE;
+    if (genre && preferences.dislikedGenres.has(genre))
+        score += preferences.dislikedGenres.get(genre) * W_DISLIKED_GENRE;
+
+    // Mood affinity
+    if (mood && preferences.likedMoods.has(mood))
+        score += preferences.likedMoods.get(mood) * W_LIKED_MOOD;
+    if (mood && preferences.dislikedMoods.has(mood))
+        score += preferences.dislikedMoods.get(mood) * W_DISLIKED_MOOD;
+
+    // Session anchoring — keep tracks that fit the original vibe
+    for (const sg of activeChips.genre) {
+        if (genre.includes(sg.toLowerCase())) score += W_SESSION_GENRE;
+    }
+    for (const sm of activeChips.mood) {
+        if (mood.includes(sm.toLowerCase())) score += W_SESSION_MOOD;
+    }
+
+    // Reason-signal penalties (e.g. user said "too slow" — penalize tracks with "slow" in name)
+    for (const kw of preferences.reasonSignals) {
+        if (textBlob.includes(kw)) score += W_REASON_PENALTY;
+    }
+
+    // Mild exploration factor — widen when user hits consecutive dislikes
+    const explorationBoost = preferences.consecutiveDislikes * W_WIDEN_ON_DISLIKES;
+    score += (Math.random() * (W_EXPLORATION + explorationBoost));
+
+    return score;
+}
+
+/**
+ * [NEW] Artist-spread guardrail: after scoring, push down tracks whose
+ * artist appeared in the previous N slots to avoid back-to-back repeats.
+ * MAX_CONSECUTIVE_SAME_ARTIST = 1 means no two adjacent tracks from same artist.
+ */
+const MAX_CONSECUTIVE_SAME_ARTIST = 1;
+
+/**
+ * rerankUpcomingQueue()
+ * Re-sorts tracks AFTER currentTrackIndex by score (descending),
+ * then applies artist-spread to avoid repetition. Updates Up Next UI.
+ */
+function rerankUpcomingQueue() {
+    if (!currentQueue.length || currentQueue.length <= currentTrackIndex + 1) return;
+
+    const upcoming = currentQueue.slice(currentTrackIndex + 1);
+    // Score and sort
+    upcoming.sort((a, b) => scoreTrack(b) - scoreTrack(a));
+
+    // Artist-spread: greedily reorder so same artist doesn't appear within N consecutive slots
+    const spread = [];
+    const remaining = [...upcoming];
+    // The "anchor" artist is whoever is currently playing
+    const currentArtist = currentQueue[currentTrackIndex]
+        ? (currentQueue[currentTrackIndex].artist || '').toLowerCase()
+        : '';
+    const recentArtists = currentArtist ? [currentArtist] : [];
+
+    while (remaining.length > 0) {
+        let picked = -1;
+        for (let i = 0; i < remaining.length; i++) {
+            const a = (remaining[i].artist || '').toLowerCase();
+            const recent = recentArtists.slice(-MAX_CONSECUTIVE_SAME_ARTIST);
+            if (!recent.includes(a)) { picked = i; break; }
+        }
+        // If every remaining track repeats, just take the top-scored one
+        if (picked === -1) picked = 0;
+        const track = remaining.splice(picked, 1)[0];
+        recentArtists.push((track.artist || '').toLowerCase());
+        spread.push(track);
+    }
+
+    currentQueue = [
+        ...currentQueue.slice(0, currentTrackIndex + 1),
+        ...spread
+    ];
+    updateUpNext();
+}
+
+/** Reset preferences (called when starting a new session) */
+function resetPreferences() {
+    preferences.likedTrackIds.clear();
+    preferences.dislikedTrackIds.clear();
+    preferences.likedArtists.clear();
+    preferences.dislikedArtists.clear();
+    preferences.likedGenres.clear();
+    preferences.dislikedGenres.clear();
+    preferences.likedMoods.clear();
+    preferences.dislikedMoods.clear();
+    preferences.reasonSignals = [];
+    preferences.consecutiveDislikes = 0;
+    // Try loading saved prefs from a previous session
+    loadPreferences();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   [NEW] LOCALSTORAGE PERSISTENCE
+   ─────────────────────────────────────────────────────────────
+   Lightweight: only stores liked/disliked track IDs, artist
+   weights, and reason signals. Silently fails if storage is
+   unavailable (private browsing, quota exceeded, etc).
+   ═══════════════════════════════════════════════════════════════ */
+const PREFS_KEY = 'viona_prefs_v1';
+
+function savePreferences() {
+    try {
+        const data = {
+            likedTrackIds: [...preferences.likedTrackIds],
+            dislikedTrackIds: [...preferences.dislikedTrackIds],
+            likedArtists: [...preferences.likedArtists],
+            dislikedArtists: [...preferences.dislikedArtists],
+            likedGenres: [...preferences.likedGenres],
+            dislikedGenres: [...preferences.dislikedGenres],
+            likedMoods: [...preferences.likedMoods],
+            dislikedMoods: [...preferences.dislikedMoods],
+            reasonSignals: preferences.reasonSignals.slice(-50), // cap at 50
+        };
+        localStorage.setItem(PREFS_KEY, JSON.stringify(data));
+    } catch (e) { /* silent — storage may be unavailable */ }
+}
+
+function loadPreferences() {
+    try {
+        const raw = localStorage.getItem(PREFS_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (data.likedTrackIds) data.likedTrackIds.forEach(id => preferences.likedTrackIds.add(id));
+        if (data.dislikedTrackIds) data.dislikedTrackIds.forEach(id => preferences.dislikedTrackIds.add(id));
+        if (data.likedArtists) data.likedArtists.forEach(([k,v]) => preferences.likedArtists.set(k, v));
+        if (data.dislikedArtists) data.dislikedArtists.forEach(([k,v]) => preferences.dislikedArtists.set(k, v));
+        if (data.likedGenres) data.likedGenres.forEach(([k,v]) => preferences.likedGenres.set(k, v));
+        if (data.dislikedGenres) data.dislikedGenres.forEach(([k,v]) => preferences.dislikedGenres.set(k, v));
+        if (data.likedMoods) data.likedMoods.forEach(([k,v]) => preferences.likedMoods.set(k, v));
+        if (data.dislikedMoods) data.dislikedMoods.forEach(([k,v]) => preferences.dislikedMoods.set(k, v));
+        if (data.reasonSignals) preferences.reasonSignals = data.reasonSignals;
+    } catch (e) { /* silent — corrupt or unavailable */ }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SCREEN MANAGEMENT
+   ═══════════════════════════════════════════════════════════════ */
+function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>{s.style.display='none';s.classList.remove('active')});
+    const el=document.getElementById(id);
+    el.style.display='block';
+    requestAnimationFrame(()=>{el.classList.add('active');window.scrollTo(0,0)});
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CONNECT SCREEN
+   ═══════════════════════════════════════════════════════════════ */
+function showServiceSetup(s){
+    document.getElementById('spotify-setup').style.display=s==='spotify'?'block':'none';
+    document.getElementById('apple-setup').style.display=s==='apple'?'block':'none';
+}
 function checkSpotifyReady(){document.getElementById('spotify-connect-btn').disabled=document.getElementById('spotify-client-id').value.trim().length<10}
 function checkAppleReady(){document.getElementById('apple-connect-btn').disabled=document.getElementById('apple-token').value.trim().length<50}
 
@@ -240,74 +675,403 @@ async function handleSpotifyCallback(){
     const code=new URLSearchParams(window.location.search).get('code');if(!code)return false;
     const c=sessionStorage.getItem('sp_c'),r=sessionStorage.getItem('sp_r'),v=sessionStorage.getItem('sp_v');if(!c||!v)return false;
     try{const res=await fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',code,redirect_uri:r,client_id:c,code_verifier:v})});
-    const d=await res.json();if(d.access_token){spotifyToken=d.access_token;serviceMode='spotify';window.history.replaceState({},'',window.location.pathname);setBadge('spotify');showScreen('setup-screen');return true}}catch(e){console.error(e)}return false;
+    const d=await res.json();if(d.access_token){spotifyToken=d.access_token;serviceMode='spotify';window.history.replaceState({},'',window.location.pathname);setBadge('spotify');showScreen('setup-screen');return true}else{showToast('Spotify auth failed — try demo mode')}}catch(e){console.error(e);showToast('Spotify connection error')}return false;
 }
 
 async function connectAppleMusic(){
     const token=document.getElementById('apple-token').value.trim();if(!token)return;
     const btn=document.getElementById('apple-connect-btn');btn.disabled=true;btn.textContent='CONNECTING...';
     try{await MusicKit.configure({developerToken:token,app:{name:'Viona',build:'1.0.0'}});musicInstance=MusicKit.getInstance();await musicInstance.authorize();serviceMode='apple';setBadge('apple');showScreen('setup-screen')}
-    catch(e){console.error(e);document.getElementById('apple-error').style.display='block';document.getElementById('apple-error').textContent=e.message||'Connection failed.';btn.disabled=false;btn.textContent='CONNECT'}
+    catch(e){console.error(e);document.getElementById('apple-error').style.display='block';document.getElementById('apple-error').textContent=(e.message||'Connection failed.')+' You can continue in demo mode.';btn.disabled=false;btn.textContent='CONNECT'}
 }
 
 function startDemo(){serviceMode='demo';setBadge('demo');showScreen('setup-screen')}
 function setBadge(m){const b=document.getElementById('connection-badge');if(m==='spotify'){b.className='badge badge-spotify';b.innerHTML='● Spotify'}else if(m==='apple'){b.className='badge badge-apple';b.innerHTML='● Apple Music'}else{b.className='badge badge-demo';b.innerHTML='◌ Demo'}}
 
-// ── Session ─────────────────────────────
-async function startSession(){currentTrackIndex=0;showScreen('playback-screen');if(serviceMode==='demo'){currentQueue=[...DEMO_TRACKS];loadTrack(0)}else if(serviceMode==='apple')await loadAppleMusicQueue();else if(serviceMode==='spotify')await loadSpotifyQueue()}
+/* ═══════════════════════════════════════════════════════════════
+   SESSION
+   ═══════════════════════════════════════════════════════════════ */
+async function startSession(){
+    currentTrackIndex=0;
+    resetPreferences();
+    resetFeedbackUI();
+    showScreen('playback-screen');
+    if(serviceMode==='demo'){currentQueue=[...DEMO_TRACKS];loadTrack(0)}
+    else if(serviceMode==='apple')await loadAppleMusicQueue();
+    else if(serviceMode==='spotify')await loadSpotifyQueue();
+}
 function backToSetup(){stopPlayback();showScreen('setup-screen')}
 function buildSearchQuery(){return[document.getElementById('intent-input').value,[...activeChips.genre].join(' '),[...activeChips.mood].join(' '),document.getElementById('free-text').value].filter(Boolean).join(' ').substring(0,100)}
 
-// ── Apple Music ─────────────────────────
-async function loadAppleMusicQueue(){showLoadingState();try{const q=buildSearchQuery(),sf=musicInstance.storefrontId||'us',r=await musicInstance.api.music('/v1/catalog/'+sf+'/search',{term:q,types:['songs'],limit:25});const s=r?.data?.results?.songs?.data||[];currentQueue=s.length>0?s.map(mapApple):[...DEMO_TRACKS];if(currentQueue.length>0)loadAppleTrack(0)}catch(e){console.error(e);currentQueue=[...DEMO_TRACKS];loadTrack(0)}}
-function mapApple(s){const a=s.attributes;return{id:s.id,name:a.name,artist:a.artistName,album:a.albumName||'',duration:Math.round((a.durationInMillis||0)/1000),artUrl:a.artwork?.url?a.artwork.url.replace('{w}','600').replace('{h}','600'):'',catalogId:s.id}}
-async function loadAppleTrack(i){if(i>=currentQueue.length){showToast('Session complete');return}currentTrackIndex=i;updateTrackUI(currentQueue[i]);updateUpNext();try{await musicInstance.setQueue({songs:[currentQueue[i].catalogId]});await musicInstance.play();setPlayingState(true);startAppleMonitor()}catch(e){simulatePlayback(currentQueue[i].duration);setPlayingState(true)}}
-function startAppleMonitor(){clearPlayback();playbackInterval=setInterval(()=>{if(!musicInstance)return;const c=musicInstance.currentPlaybackTime,t=musicInstance.currentPlaybackDuration;if(t>0){document.getElementById('progress-bar').style.width=((c/t)*100)+'%';document.getElementById('current-time').textContent=fmt(c);document.getElementById('total-time').textContent=fmt(t)}if(musicInstance.playbackState===MusicKit.PlaybackStates.completed){clearPlayback();setTimeout(()=>skipTrack(),800)}},500)}
+/* ═══════════════════════════════════════════════════════════════
+   APPLE MUSIC
+   ═══════════════════════════════════════════════════════════════ */
+async function loadAppleMusicQueue(){
+    showLoadingState();
+    try{
+        const q=buildSearchQuery(),sf=musicInstance.storefrontId||'us';
+        const r=await musicInstance.api.music('/v1/catalog/'+sf+'/search',{term:q,types:['songs'],limit:25});
+        const s=r?.data?.results?.songs?.data||[];
+        currentQueue=s.length>0?s.map(mapApple):[...DEMO_TRACKS];
+        if(s.length===0) showToast('No results — using demo tracks');
+        if(currentQueue.length>0)loadAppleTrack(0);
+    }catch(e){
+        console.error('Apple Music load error:',e);
+        currentQueue=[...DEMO_TRACKS];
+        showToast('Apple Music error — using demo tracks');
+        loadTrack(0);
+    }
+}
+function mapApple(s){const a=s.attributes;return{id:s.id,name:a.name,artist:a.artistName,album:a.albumName||'',duration:Math.round((a.durationInMillis||0)/1000),artUrl:a.artwork?.url?a.artwork.url.replace('{w}','600').replace('{h}','600'):'',catalogId:s.id,genre:a.genreNames?.[0]||'',mood:''}}
+async function loadAppleTrack(i){
+    if(i>=currentQueue.length){showToast('Session complete');return}
+    currentTrackIndex=i;
+    updateTrackUI(currentQueue[i]);
+    resetFeedbackUI();
+    updateUpNext();
+    try{await musicInstance.setQueue({songs:[currentQueue[i].catalogId]});await musicInstance.play();setPlayingState(true);startAppleMonitor()}
+    catch(e){simulatePlayback(currentQueue[i].duration);setPlayingState(true)}
+}
+function startAppleMonitor(){
+    clearPlayback();
+    playbackInterval=setInterval(()=>{
+        if(!musicInstance)return;
+        const c=musicInstance.currentPlaybackTime,t=musicInstance.currentPlaybackDuration;
+        if(t>0){
+            document.getElementById('progress-bar').style.width=((c/t)*100)+'%';
+            document.getElementById('current-time').textContent=fmt(c);
+            document.getElementById('total-time').textContent=fmt(t);
+        }
+        if(musicInstance.playbackState===MusicKit.PlaybackStates.completed){
+            clearPlayback();setTimeout(()=>skipTrack(),800);
+        }
+    },500);
+}
 
-// ── Spotify ─────────────────────────────
-async function loadSpotifyQueue(){showLoadingState();try{const q=buildSearchQuery(),r=await fetch('https://api.spotify.com/v1/search?q='+encodeURIComponent(q)+'&type=track&limit=25',{headers:{Authorization:'Bearer '+spotifyToken}});const d=await r.json(),t=d?.tracks?.items||[];currentQueue=t.length>0?t.map(mapSpotify):[...DEMO_TRACKS];loadTrack(0)}catch(e){console.error(e);currentQueue=[...DEMO_TRACKS];loadTrack(0)}}
-function mapSpotify(t){return{id:t.id,name:t.name,artist:t.artists.map(a=>a.name).join(', '),album:t.album?.name||'',duration:Math.round((t.duration_ms||0)/1000),artUrl:t.album?.images?.[0]?.url||'',previewUrl:t.preview_url||'',spotifyUri:t.uri}}
+/* ═══════════════════════════════════════════════════════════════
+   SPOTIFY
+   ═══════════════════════════════════════════════════════════════ */
+async function loadSpotifyQueue(){
+    showLoadingState();
+    try{
+        const q=buildSearchQuery();
+        const r=await fetch('https://api.spotify.com/v1/search?q='+encodeURIComponent(q)+'&type=track&limit=25',{headers:{Authorization:'Bearer '+spotifyToken}});
+        if (!r.ok) throw new Error('Spotify API ' + r.status);
+        const d=await r.json(),t=d?.tracks?.items||[];
+        currentQueue=t.length>0?t.map(mapSpotify):[...DEMO_TRACKS];
+        if(t.length===0) showToast('No Spotify results — using demo tracks');
+        loadTrack(0);
+    }catch(e){
+        console.error('Spotify load error:',e);
+        currentQueue=[...DEMO_TRACKS];
+        showToast('Spotify error — using demo tracks');
+        loadTrack(0);
+    }
+}
+function mapSpotify(t){return{id:t.id,name:t.name,artist:t.artists.map(a=>a.name).join(', '),album:t.album?.name||'',duration:Math.round((t.duration_ms||0)/1000),artUrl:t.album?.images?.[0]?.url||'',previewUrl:t.preview_url||'',spotifyUri:t.uri,genre:'',mood:''}}
 
-// ── Playback ────────────────────────────
-function loadTrack(i){clearPlayback();currentTrackIndex=i%currentQueue.length;const t=currentQueue[currentTrackIndex];updateTrackUI(t);updateUpNext();simulatePlayback(t.duration);setPlayingState(true)}
-function simulatePlayback(s){clearPlayback();let p=0;document.getElementById('progress-bar').style.width='0%';document.getElementById('current-time').textContent='0:00';document.getElementById('total-time').textContent=fmt(s);playbackInterval=setInterval(()=>{p+=2;if(p>100)p=100;document.getElementById('progress-bar').style.width=p+'%';document.getElementById('current-time').textContent=fmt(Math.floor((p/100)*s));if(p>=100){clearPlayback();setTimeout(()=>skipTrack(),800)}},600)}
-function togglePlayPause(){if(isPlaying){if(serviceMode==='apple'&&musicInstance)musicInstance.pause();clearPlayback();setPlayingState(false)}else{if(serviceMode==='apple'&&musicInstance){musicInstance.play();startAppleMonitor()}else{const t=currentQueue[currentTrackIndex];if(t)simulatePlayback(t.duration)}setPlayingState(true)}}
-function skipTrack(){stopPlayback();const n=currentTrackIndex+1;if(serviceMode==='apple'&&musicInstance)loadAppleTrack(n);else loadTrack(n%currentQueue.length)}
-function previousTrack(){stopPlayback();const p=Math.max(0,currentTrackIndex-1);if(serviceMode==='apple'&&musicInstance)loadAppleTrack(p);else loadTrack(p)}
-function seekTrack(e){const p=e.offsetX/e.currentTarget.offsetWidth;document.getElementById('progress-bar').style.width=(p*100)+'%';if(serviceMode==='apple'&&musicInstance&&musicInstance.currentPlaybackDuration)musicInstance.seekToTime(p*musicInstance.currentPlaybackDuration)}
-function stopPlayback(){clearPlayback();if(serviceMode==='apple'&&musicInstance)try{musicInstance.stop()}catch(e){}setPlayingState(false)}
-function setPlayingState(p){isPlaying=p;document.getElementById('play-icon').style.display=p?'none':'block';document.getElementById('pause-icon').style.display=p?'block':'none'}
+/* ═══════════════════════════════════════════════════════════════
+   PLAYBACK (unchanged core, with resetFeedbackUI on loadTrack)
+   ═══════════════════════════════════════════════════════════════ */
+function loadTrack(i){
+    // [GUARDRAIL] Empty queue fallback
+    if (!currentQueue.length) {
+        currentQueue = [...DEMO_TRACKS];
+        showToast('Queue empty — using demo tracks');
+    }
+    clearPlayback();
+    currentTrackIndex=i%currentQueue.length;
+    const t=currentQueue[currentTrackIndex];
+    updateTrackUI(t);
+    resetFeedbackUI();
+    updateUpNext();
+    simulatePlayback(t.duration);
+    setPlayingState(true);
+}
+function simulatePlayback(s){
+    clearPlayback();
+    let p=0;
+    document.getElementById('progress-bar').style.width='0%';
+    document.getElementById('current-time').textContent='0:00';
+    document.getElementById('total-time').textContent=fmt(s);
+    playbackInterval=setInterval(()=>{
+        p+=2;if(p>100)p=100;
+        document.getElementById('progress-bar').style.width=p+'%';
+        document.getElementById('current-time').textContent=fmt(Math.floor((p/100)*s));
+        if(p>=100){clearPlayback();setTimeout(()=>skipTrack(),800)}
+    },600);
+}
+function togglePlayPause(){
+    if(isPlaying){
+        if(serviceMode==='apple'&&musicInstance)musicInstance.pause();
+        clearPlayback();setPlayingState(false);
+    }else{
+        if(serviceMode==='apple'&&musicInstance){musicInstance.play();startAppleMonitor()}
+        else{const t=currentQueue[currentTrackIndex];if(t)simulatePlayback(t.duration)}
+        setPlayingState(true);
+    }
+}
+function skipTrack(){
+    if (!currentQueue.length) return;
+    stopPlayback();
+    const n=currentTrackIndex+1;
+    if(serviceMode==='apple'&&musicInstance)loadAppleTrack(n);
+    else loadTrack(n%currentQueue.length);
+}
+function previousTrack(){
+    if (!currentQueue.length) return;
+    stopPlayback();
+    const p=Math.max(0,currentTrackIndex-1);
+    if(serviceMode==='apple'&&musicInstance)loadAppleTrack(p);
+    else loadTrack(p);
+}
+function seekTrack(e){
+    const p=e.offsetX/e.currentTarget.offsetWidth;
+    document.getElementById('progress-bar').style.width=(p*100)+'%';
+    if(serviceMode==='apple'&&musicInstance&&musicInstance.currentPlaybackDuration)
+        musicInstance.seekToTime(p*musicInstance.currentPlaybackDuration);
+}
+function stopPlayback(){
+    clearPlayback();
+    if(serviceMode==='apple'&&musicInstance)try{musicInstance.stop()}catch(e){}
+    setPlayingState(false);
+}
+function setPlayingState(p){
+    isPlaying=p;
+    document.getElementById('play-icon').style.display=p?'none':'block';
+    document.getElementById('pause-icon').style.display=p?'block':'none';
+}
 function clearPlayback(){if(playbackInterval){clearInterval(playbackInterval);playbackInterval=null}}
 
-// ── UI ──────────────────────────────────
-function updateTrackUI(t){document.getElementById('track-name').textContent=t.name;document.getElementById('artist-name').textContent=t.artist;document.getElementById('album-name').textContent=t.album||'';const img=document.getElementById('album-art-img'),ph=document.getElementById('album-art-placeholder');if(t.artUrl){img.src=t.artUrl;img.style.display='block';ph.style.display='none'}else{img.style.display='none';ph.style.display='block'}document.getElementById('feedback-buttons').style.display='flex';document.getElementById('dislike-reason').style.display='none';document.getElementById('reason-input').value='';document.getElementById('progress-bar').style.width='0%';document.getElementById('current-time').textContent='0:00';document.getElementById('total-time').textContent=fmt(t.duration)}
-function updateUpNext(){const c=document.getElementById('up-next'),l=document.getElementById('up-next-list'),u=currentQueue.slice(currentTrackIndex+1,currentTrackIndex+4);if(!u.length){c.style.display='none';return}c.style.display='block';l.innerHTML='';u.forEach((t,i)=>{const d=document.createElement('div');d.className='track-item';d.onclick=()=>{stopPlayback();if(serviceMode==='apple'&&musicInstance)loadAppleTrack(currentTrackIndex+1+i);else loadTrack(currentTrackIndex+1+i)};d.innerHTML=`<div style="width:36px;height:36px;border-radius:4px;overflow:hidden;background:var(--bg-warm);display:flex;align-items:center;justify-content:center;flex-shrink:0">${t.artUrl?'<img src="'+t.artUrl+'" style="width:100%;height:100%;object-fit:cover"/>':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="1"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>'}</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div><div style="font-size:12px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.artist}</div></div><span style="font-size:12px;color:var(--text-tertiary);flex-shrink:0;font-variant-numeric:tabular-nums">${fmt(t.duration)}</span>`;l.appendChild(d)})}
-function showLoadingState(){document.getElementById('track-name').textContent='Finding music…';document.getElementById('artist-name').textContent='Searching';document.getElementById('album-name').textContent='';document.getElementById('album-art-img').style.display='none';document.getElementById('album-art-placeholder').style.display='block'}
+/* ═══════════════════════════════════════════════════════════════
+   UI HELPERS
+   ═══════════════════════════════════════════════════════════════ */
+function updateTrackUI(t){
+    document.getElementById('track-name').textContent=t.name;
+    document.getElementById('artist-name').textContent=t.artist;
+    document.getElementById('album-name').textContent=t.album||'';
+    const img=document.getElementById('album-art-img'),ph=document.getElementById('album-art-placeholder');
+    if(t.artUrl){img.src=t.artUrl;img.style.display='block';ph.style.display='none'}
+    else{img.style.display='none';ph.style.display='block'}
+    document.getElementById('progress-bar').style.width='0%';
+    document.getElementById('current-time').textContent='0:00';
+    document.getElementById('total-time').textContent=fmt(t.duration);
+}
 
-// ── Feedback ────────────────────────────
-function handleLike(){showToast('Liked — finding similar');setTimeout(()=>skipTrack(),1200)}
-function handleDislike(){document.getElementById('feedback-buttons').style.display='none';document.getElementById('dislike-reason').style.display='block'}
-function cancelDislike(){document.getElementById('dislike-reason').style.display='none';document.getElementById('feedback-buttons').style.display='flex'}
-function submitDislike(){showToast('Skipped — adjusting');setTimeout(()=>skipTrack(),800)}
+/* [CHANGED] Show up to 8 tracks in Up Next */
+function updateUpNext(){
+    const c=document.getElementById('up-next'),l=document.getElementById('up-next-list');
+    const u=currentQueue.slice(currentTrackIndex+1,currentTrackIndex+9); // up to 8 tracks
+    if(!u.length){c.style.display='none';return}
+    c.style.display='block';
+    l.innerHTML='';
+    u.forEach((t,i)=>{
+        const d=document.createElement('div');
+        d.className='track-item';
+        d.onclick=()=>{stopPlayback();if(serviceMode==='apple'&&musicInstance)loadAppleTrack(currentTrackIndex+1+i);else loadTrack(currentTrackIndex+1+i)};
+        d.innerHTML=`<div style="width:36px;height:36px;border-radius:4px;overflow:hidden;background:var(--bg-warm);display:flex;align-items:center;justify-content:center;flex-shrink:0">${t.artUrl?'<img src="'+t.artUrl+'" style="width:100%;height:100%;object-fit:cover" loading="lazy"/>':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="1"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>'}</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div><div style="font-size:12px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.artist}</div></div><span style="font-size:12px;color:var(--text-tertiary);flex-shrink:0;font-variant-numeric:tabular-nums">${fmt(t.duration)}</span>`;
+        l.appendChild(d);
+    });
+}
 
-// ── Chips ───────────────────────────────
+function showLoadingState(){
+    document.getElementById('track-name').textContent='Finding music…';
+    document.getElementById('artist-name').textContent='Searching';
+    document.getElementById('album-name').textContent='';
+    document.getElementById('album-art-img').style.display='none';
+    document.getElementById('album-art-placeholder').style.display='block';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   [CHANGED] FEEDBACK — NO LONGER INTERRUPTS PLAYBACK
+   ─────────────────────────────────────────────────────────────
+   handleLike()   → record positive, re-rank queue, show toast
+   handleDislike() → toggle reason panel (keep playing)
+   submitDislike() → record negative + reason, re-rank queue, close panel
+   ═══════════════════════════════════════════════════════════════ */
+
+/** Reset feedback button states when a new track loads */
+function resetFeedbackUI() {
+    const likeBtn = document.getElementById('like-btn');
+    const dislikeBtn = document.getElementById('dislike-btn');
+    likeBtn.classList.remove('liked','debounced');
+    dislikeBtn.classList.remove('disliked','debounced');
+    document.getElementById('dislike-overlay').classList.remove('open');
+    document.getElementById('reason-input').value = '';
+    document.getElementById('feedback-buttons').style.display = 'flex';
+    hideTunedMsg();
+    _feedbackDebounce = false;
+}
+
+/** Debounce wrapper — prevents rapid-fire taps for 600ms */
+function withDebounce(fn) {
+    if (_feedbackDebounce) return;
+    _feedbackDebounce = true;
+    const btns = document.querySelectorAll('.fb-btn');
+    btns.forEach(b => b.classList.add('debounced'));
+    fn();
+    setTimeout(() => {
+        _feedbackDebounce = false;
+        btns.forEach(b => b.classList.remove('debounced'));
+    }, 600);
+}
+
+function handleLike() {
+    withDebounce(() => {
+        const track = currentQueue[currentTrackIndex];
+        if (!track) return;
+
+        const likeBtn = document.getElementById('like-btn');
+        const dislikeBtn = document.getElementById('dislike-btn');
+
+        // Toggle: if already liked, undo
+        if (likeBtn.classList.contains('liked')) {
+            likeBtn.classList.remove('liked');
+            preferences.likedTrackIds.delete(track.id || track.name);
+            savePreferences();
+            showToast('Like removed');
+            rerankUpcomingQueue();
+            return;
+        }
+
+        // Clear opposite state
+        dislikeBtn.classList.remove('disliked');
+        document.getElementById('dislike-overlay').classList.remove('open');
+
+        likeBtn.classList.add('liked');
+        recordFeedback(track, 'like');
+        rerankUpcomingQueue();
+
+        showToast('Liked — tuning your session');
+        showTunedMsg('Session tuned · more like ' + track.artist);
+    });
+}
+
+function handleDislike() {
+    withDebounce(() => {
+        const overlay = document.getElementById('dislike-overlay');
+        const dislikeBtn = document.getElementById('dislike-btn');
+
+        // Toggle overlay
+        if (overlay.classList.contains('open')) {
+            cancelDislike();
+            return;
+        }
+
+        dislikeBtn.classList.add('disliked');
+        overlay.classList.add('open');
+        // Focus input after animation
+        setTimeout(() => {
+            const input = document.getElementById('reason-input');
+            if (input) input.focus();
+        }, 350);
+        // Feedback buttons remain visible — playback continues uninterrupted
+    });
+}
+
+function cancelDislike() {
+    document.getElementById('dislike-overlay').classList.remove('open');
+    document.getElementById('dislike-btn').classList.remove('disliked');
+    document.getElementById('reason-input').value = '';
+}
+
+function submitDislike() {
+    const track = currentQueue[currentTrackIndex];
+    if (!track) return;
+
+    const reason = document.getElementById('reason-input').value.trim();
+    const likeBtn = document.getElementById('like-btn');
+
+    likeBtn.classList.remove('liked');
+
+    recordFeedback(track, 'dislike', reason);
+    rerankUpcomingQueue();
+
+    document.getElementById('dislike-overlay').classList.remove('open');
+    document.getElementById('reason-input').value = '';
+
+    showToast('Got it — adjusting upcoming tracks');
+    showTunedMsg('Queue adjusted · avoiding similar');
+}
+
+function showTunedMsg(text) {
+    const el = document.getElementById('session-tuned-msg');
+    el.textContent = text;
+    el.style.display = 'block';
+    // auto-hide after 4s
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+function hideTunedMsg() {
+    const el = document.getElementById('session-tuned-msg');
+    el.style.display = 'none';
+    clearTimeout(el._timer);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CHIPS
+   ═══════════════════════════════════════════════════════════════ */
 function toggleChip(t,x){activeChips[t].has(x)?activeChips[t].delete(x):activeChips[t].add(x);renderChips(t)}
 function removeChip(t,x){activeChips[t].delete(x);renderChips(t)}
-function renderChips(t){const c=document.getElementById(t+'-chips');c.innerHTML='';activeChips[t].forEach(x=>{const d=document.createElement('div');d.className='chip-active';const s=x.replace(/'/g,"\\'");d.innerHTML=`${x}<button onclick="removeChip('${t}','${s}')">×</button>`;c.appendChild(d)})}
+function renderChips(t){
+    const c=document.getElementById(t+'-chips');c.innerHTML='';
+    activeChips[t].forEach(x=>{
+        const d=document.createElement('div');d.className='chip-active';
+        const s=x.replace(/'/g,"\\'");
+        d.innerHTML=`${x}<button onclick="removeChip('${t}','${s}')">×</button>`;
+        c.appendChild(d);
+    });
+}
 
-// ── Energy ──────────────────────────────
-function initEnergyPhases(){document.querySelectorAll('.energy-phase').forEach(el=>{const p=parseInt(el.dataset.phase),dots=el.querySelector('.energy-dots'),slider=el.querySelector('.phase-slider');for(let i=1;i<=5;i++){const b=document.createElement('button');b.className='energy-dot';b.dataset.level=i;b.onclick=()=>setEnergy(p,i);dots.appendChild(b)}slider.addEventListener('input',()=>{phases[p].duration=parseInt(slider.value);refreshPhase(p);updateTotal()});updateEnergyDots(p);refreshPhase(p)});updateTotal()}
+/* ═══════════════════════════════════════════════════════════════
+   ENERGY PHASES
+   ═══════════════════════════════════════════════════════════════ */
+function initEnergyPhases(){
+    document.querySelectorAll('.energy-phase').forEach(el=>{
+        const p=parseInt(el.dataset.phase),dots=el.querySelector('.energy-dots'),slider=el.querySelector('.phase-slider');
+        for(let i=1;i<=5;i++){const b=document.createElement('button');b.className='energy-dot';b.dataset.level=i;b.onclick=()=>setEnergy(p,i);dots.appendChild(b)}
+        slider.addEventListener('input',()=>{phases[p].duration=parseInt(slider.value);refreshPhase(p);updateTotal()});
+        updateEnergyDots(p);refreshPhase(p);
+    });
+    updateTotal();
+}
 function setEnergy(p,l){phases[p].energy=l;updateEnergyDots(p);refreshPhase(p)}
 function updateEnergyDots(p){document.querySelector(`.energy-phase[data-phase="${p}"]`).querySelectorAll('.energy-dot').forEach(d=>{d.classList.toggle('selected',parseInt(d.dataset.level)===phases[p].energy)})}
 function refreshPhase(p){const el=document.querySelector(`.energy-phase[data-phase="${p}"]`);el.querySelector('.phase-duration').textContent=phases[p].duration+' min';el.querySelector('.phase-energy-label').textContent=ENERGY[phases[p].energy].label}
 function updateTotal(){const t=phases[1].duration+phases[2].duration+phases[3].duration,h=Math.floor(t/60),m=t%60;document.getElementById('total-duration').textContent=h>0?`${h}h ${m}min`:`${m} min`}
 
-// ── Toast ───────────────────────────────
-function showToast(m){document.querySelectorAll('.toast').forEach(t=>t.remove());const el=document.createElement('div');el.className='toast';el.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:10px 24px;background:var(--text);color:white;font-size:13px;font-family:var(--sans);font-weight:500;border-radius:100px;z-index:999;animation:toastIn .3s var(--ease);letter-spacing:.01em';el.textContent=m;document.body.appendChild(el);setTimeout(()=>{el.style.animation='toastOut .3s var(--ease) forwards';setTimeout(()=>el.remove(),300)},2000)}
+/* ═══════════════════════════════════════════════════════════════
+   TOAST
+   ═══════════════════════════════════════════════════════════════ */
+function showToast(m){
+    document.querySelectorAll('.toast').forEach(t=>t.remove());
+    const el=document.createElement('div');el.className='toast';
+    el.style.cssText='position:fixed;top:max(20px,var(--safe-top));left:50%;transform:translateX(-50%);padding:10px 24px;background:var(--text);color:white;font-size:13px;font-family:var(--sans);font-weight:500;border-radius:100px;z-index:999;animation:toastIn .3s var(--ease);letter-spacing:.01em;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis';
+    el.textContent=m;document.body.appendChild(el);
+    setTimeout(()=>{el.style.animation='toastOut .3s var(--ease) forwards';setTimeout(()=>el.remove(),300)},2000);
+}
 
 function fmt(s){if(!s||s<0)return'0:00';const m=Math.floor(s/60),r=Math.floor(s%60);return`${m}:${r.toString().padStart(2,'0')}`}
 
-(async function(){const h=await handleSpotifyCallback();if(!h)showScreen('connect-screen');initEnergyPhases();renderChips('genre');renderChips('mood')})();
+/* ═══════════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════════ */
+(async function(){
+    const h=await handleSpotifyCallback();
+    if(!h)showScreen('connect-screen');
+    initEnergyPhases();
+    renderChips('genre');
+    renderChips('mood');
+
+    // [NEW] Close dislike overlay on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') cancelDislike();
+    });
+    // [NEW] Submit dislike on Enter in reason input
+    document.getElementById('reason-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); submitDislike(); }
+    });
+})();
 </script>
 </body>
 </html>
