@@ -189,9 +189,9 @@
             <div style="flex:1"><div style="font-weight:600">Spotify</div><div class="body-sm" style="font-size:12px;margin-top:2px">Connect with Client ID</div></div>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <button class="btn-service" onclick="showServiceSetup('apple')">
+        <button class="btn-service" id="apple-connect-btn-main" onclick="connectAppleMusic()">
             <div class="svc-dot" style="background:var(--apple)"></div>
-            <div style="flex:1"><div style="font-weight:600">Apple Music</div><div class="body-sm" style="font-size:12px;margin-top:2px">Connect with Developer Token</div></div>
+            <div style="flex:1"><div style="font-weight:600">Apple Music</div><div class="body-sm" style="font-size:12px;margin-top:2px">Sign in with your Apple account</div></div>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
     </div>
@@ -208,17 +208,8 @@
             <div id="spotify-error" style="display:none;margin-top:12px;font-size:12px;color:#c45a5a;text-align:center"></div>
         </div>
     </div>
-    <!-- Apple setup -->
-    <div id="apple-setup" class="rise" style="display:none;margin-bottom:32px">
-        <div class="card">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px"><div class="svc-dot" style="background:var(--apple);width:8px;height:8px"></div><span class="label" style="color:var(--apple)">Apple Music</span></div>
-            <label class="label" style="display:block;margin-bottom:8px">Developer Token (JWT)</label>
-            <textarea id="apple-token" rows="3" class="input" placeholder="Paste your MusicKit developer token" style="font-family:'SF Mono',Monaco,Consolas,monospace;font-size:16px;margin-bottom:16px" oninput="checkAppleReady()"></textarea>
-            <p class="body-sm" style="font-size:11px;margin-bottom:20px;line-height:1.6">Join <a href="https://developer.apple.com/programs/" target="_blank" style="color:var(--text);text-decoration:underline">Apple Developer Program</a> ($99/yr) → Create MusicKit key → Generate JWT</p>
-            <button id="apple-connect-btn" class="btn btn-primary" onclick="connectAppleMusic()" disabled>Connect</button>
-            <div id="apple-error" style="display:none;margin-top:12px;font-size:12px;color:#c45a5a;text-align:center"></div>
-        </div>
-    </div>
+    <!-- Apple Music error (shown inline if connection fails) -->
+    <div id="apple-error" class="rise" style="display:none;margin-bottom:16px;text-align:center;font-size:12px;color:#c45a5a"></div>
     <div class="rise rise-2"><button class="btn btn-ghost" onclick="startDemo()" style="width:100%;text-align:center">Continue without account →</button></div>
 </div>
 </div>
@@ -655,10 +646,8 @@ function showScreen(id){
    ═══════════════════════════════════════════════════════════════ */
 function showServiceSetup(s){
     document.getElementById('spotify-setup').style.display=s==='spotify'?'block':'none';
-    document.getElementById('apple-setup').style.display=s==='apple'?'block':'none';
 }
 function checkSpotifyReady(){document.getElementById('spotify-connect-btn').disabled=document.getElementById('spotify-client-id').value.trim().length<10}
-function checkAppleReady(){document.getElementById('apple-connect-btn').disabled=document.getElementById('apple-token').value.trim().length<50}
 
 function connectSpotify(){
     const clientId=document.getElementById('spotify-client-id').value.trim();
@@ -678,11 +667,42 @@ async function handleSpotifyCallback(){
     const d=await res.json();if(d.access_token){spotifyToken=d.access_token;serviceMode='spotify';window.history.replaceState({},'',window.location.pathname);setBadge('spotify');showScreen('setup-screen');return true}else{showToast('Spotify auth failed — try demo mode')}}catch(e){console.error(e);showToast('Spotify connection error')}return false;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   APPLE MUSIC — EMBEDDED DEVELOPER TOKEN
+   ─────────────────────────────────────────────────────────────
+   Replace the placeholder below with your actual JWT.
+   Generate with your .p8 key: the token is yours as the
+   developer — users authenticate via Apple's popup.
+   ───────────────────────────────────────────────────────────── */
+const APPLE_DEVELOPER_TOKEN = 'PASTE_YOUR_JWT_HERE';
+
 async function connectAppleMusic(){
-    const token=document.getElementById('apple-token').value.trim();if(!token)return;
-    const btn=document.getElementById('apple-connect-btn');btn.disabled=true;btn.textContent='CONNECTING...';
-    try{await MusicKit.configure({developerToken:token,app:{name:'Viona',build:'1.0.0'}});musicInstance=MusicKit.getInstance();await musicInstance.authorize();serviceMode='apple';setBadge('apple');showScreen('setup-screen')}
-    catch(e){console.error(e);document.getElementById('apple-error').style.display='block';document.getElementById('apple-error').textContent=(e.message||'Connection failed.')+' You can continue in demo mode.';btn.disabled=false;btn.textContent='CONNECT'}
+    const btn = document.getElementById('apple-connect-btn-main');
+    const errEl = document.getElementById('apple-error');
+    errEl.style.display='none';
+
+    // Show loading state on the button
+    const origHTML = btn.innerHTML;
+    btn.style.opacity='0.6';btn.style.pointerEvents='none';
+    btn.querySelector('div > div:first-child').textContent='Connecting…';
+
+    try {
+        await MusicKit.configure({
+            developerToken: APPLE_DEVELOPER_TOKEN,
+            app: { name: 'Viona', build: '1.0.0' }
+        });
+        musicInstance = MusicKit.getInstance();
+        await musicInstance.authorize(); // ← Apple sign-in popup
+        serviceMode = 'apple';
+        setBadge('apple');
+        showScreen('setup-screen');
+    } catch(e) {
+        console.error('Apple Music auth error:', e);
+        btn.innerHTML = origHTML;
+        btn.style.opacity='1';btn.style.pointerEvents='auto';
+        errEl.style.display='block';
+        errEl.textContent = (e.message || 'Connection failed.') + ' You can try again or use Demo mode.';
+    }
 }
 
 function startDemo(){serviceMode='demo';setBadge('demo');showScreen('setup-screen')}
