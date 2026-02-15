@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#f7f6f3">
+    <meta name="description" content="Viona — AI-curated music sessions that adapt to your feedback in real-time.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
     <title>Viona</title>
     <script src="https://js-cdn.music.apple.com/musickit/v3/musickit.js" crossorigin></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -10,9 +13,9 @@
         /* ── VARIABLES ───────────────────────────── */
         :root{
             --bg:#f7f6f3;--bg-warm:#f0ede8;--surface:#fff;
-            --text:#1a1a1a;--text-secondary:#8a8a8a;--text-tertiary:#b5b1ab;
+            --text:#1a1a1a;--text-secondary:#8a8a8a;--text-tertiary:#8a8580;
             --border:#e8e5e1;--border-light:#f0ede8;
-            --spotify:#1db954;--apple:#fc3c44;
+            --apple:#fc3c44;
             --serif:'Cormorant Garamond',Georgia,serif;
             --sans:'Outfit',-apple-system,sans-serif;
             --radius:4px;--radius-lg:8px;
@@ -69,6 +72,8 @@
 
         .chip-btn{padding:8px 16px;background:0 0;border:1px solid var(--border);border-radius:100px;font-family:var(--sans);font-size:13px;color:var(--text-secondary);cursor:pointer;transition:all .25s var(--ease);-webkit-tap-highlight-color:transparent}
         .chip-btn:hover{border-color:var(--text);color:var(--text)}
+        /* [P0-1] Active state for genre/mood chip buttons */
+        .chip-btn.chip-btn-active{border-color:var(--text);color:var(--text);font-weight:500;background:var(--bg-warm)}
         .chip-active{padding:8px 16px;background:var(--text);border:1px solid var(--text);border-radius:100px;font-family:var(--sans);font-size:13px;font-weight:500;color:#fff;display:inline-flex;align-items:center;gap:8px;animation:fadeIn .25s var(--ease)}
         .chip-active button{background:0 0;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:13px;padding:0;line-height:1;transition:color .2s}.chip-active button:hover{color:#fff}
 
@@ -105,9 +110,9 @@
 
         .track-item{display:flex;align-items:center;gap:14px;padding:12px 0;cursor:pointer;transition:opacity .2s;border-bottom:1px solid var(--border-light);-webkit-tap-highlight-color:transparent}
         .track-item:last-child{border-bottom:none}.track-item:hover{opacity:.65}
-        ::-webkit-scrollbar{width:0}
+        /* [G7] Scoped scrollbar hiding — only on up-next, not globally */
+        .up-next-list-scroll::-webkit-scrollbar{width:0}
         .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
-        .badge-spotify{background:#1db95415;color:var(--spotify)}
         .badge-apple{background:#fc3c4415;color:var(--apple)}
         .badge-demo{background:var(--bg-warm);color:var(--text-tertiary)}
 
@@ -158,6 +163,9 @@
             .display-sm{font-size:1.2rem}
             .btn-service{padding:16px 18px;gap:12px}
             .chip-btn,.chip-active{padding:7px 14px;font-size:12px}
+            /* [P1-3] Genre chips scroll horizontally on narrow screens */
+            .genre-chip-grid{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+            .genre-chip-grid::-webkit-scrollbar{display:none}
             .energy-dot{width:28px;height:28px}
             .fb-btn{width:52px;height:52px}
             .play-btn{width:60px;height:60px}
@@ -171,6 +179,25 @@
         @media(max-height:560px){
             #album-art-container{width:min(180px,50vw)!important}
         }
+
+        /* [G5] Focus-visible for keyboard accessibility */
+        :focus-visible{outline:2px solid var(--text);outline-offset:2px;border-radius:var(--radius)}
+        button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+        .input:focus-visible{outline:none;border-color:var(--text)} /* inputs use border instead */
+
+        /* [G6] Reduced motion support */
+        @media(prefers-reduced-motion:reduce){
+            *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
+        }
+
+        /* [P1-6] Progress bar touch-drag cursor */
+        .progress-track{touch-action:none}
+
+        /* [P2-14] Firefox range track */
+        input[type=range]::-moz-range-track{height:1px;background:var(--border);border:none}
+
+        /* [P2-6] Edit button minimum touch target */
+        #playback-screen .btn-ghost{min-height:44px;min-width:44px;display:inline-flex;align-items:center}
     </style>
 </head>
 <body>
@@ -178,39 +205,23 @@
 <!-- ══════════ CONNECT ══════════ -->
 <div id="connect-screen" class="screen active">
 <div class="container" style="min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;justify-content:center;padding-top:max(60px,var(--safe-top));padding-bottom:max(60px,var(--safe-bottom))">
-    <div class="rise" style="margin-bottom:64px">
+    <div class="rise" style="margin-bottom:48px">
         <p class="label" style="margin-bottom:16px">Est. 2026</p>
         <h1 class="display display-lg" style="margin-bottom:12px">Viona</h1>
-        <p class="body-sm" style="max-width:320px">AI-curated music sessions.<br>Connect your streaming service to begin.</p>
+        <p class="body-sm" style="max-width:320px">AI-curated music sessions<br>Connect Apple Music or explore in demo mode.</p>
     </div>
-    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:40px" class="rise rise-1">
-        <button class="btn-service" onclick="showServiceSetup('spotify')">
-            <div class="svc-dot" style="background:var(--spotify)"></div>
-            <div style="flex:1"><div style="font-weight:600">Spotify</div><div class="body-sm" style="font-size:12px;margin-top:2px">Connect with Client ID</div></div>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px" class="rise rise-1">
         <button class="btn-service" id="apple-connect-btn-main" onclick="connectAppleMusic()">
             <div class="svc-dot" style="background:var(--apple)"></div>
             <div style="flex:1"><div style="font-weight:600">Apple Music</div><div class="body-sm" style="font-size:12px;margin-top:2px">Sign in with your Apple account</div></div>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
     </div>
-    <!-- Spotify setup -->
-    <div id="spotify-setup" class="rise" style="display:none;margin-bottom:32px">
-        <div class="card">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px"><div class="svc-dot" style="background:var(--spotify);width:8px;height:8px"></div><span class="label" style="color:var(--spotify)">Spotify</span></div>
-            <label class="label" style="display:block;margin-bottom:8px">Client ID</label>
-            <input id="spotify-client-id" type="text" class="input" placeholder="Paste your Spotify Client ID" style="margin-bottom:16px;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:16px" oninput="checkSpotifyReady()"/>
-            <label class="label" style="display:block;margin-bottom:8px">Redirect URI</label>
-            <input id="spotify-redirect" type="text" class="input" placeholder="http://localhost:8080/callback" style="margin-bottom:20px;font-size:16px"/>
-            <p class="body-sm" style="font-size:11px;margin-bottom:20px;line-height:1.6">Create an app at <a href="https://developer.spotify.com/dashboard" target="_blank" style="color:var(--text);text-decoration:underline">developer.spotify.com</a> → Copy your Client ID → Add a Redirect URI<br><span style="color:var(--text-tertiary)">Note: New Spotify app registration is currently on hold.</span></p>
-            <button id="spotify-connect-btn" class="btn btn-primary" onclick="connectSpotify()" disabled>Connect</button>
-            <div id="spotify-error" style="display:none;margin-top:12px;font-size:12px;color:#c45a5a;text-align:center"></div>
-        </div>
-    </div>
     <!-- Apple Music error (shown inline if connection fails) -->
     <div id="apple-error" class="rise" style="display:none;margin-bottom:16px;text-align:center;font-size:12px;color:#c45a5a"></div>
-    <div class="rise rise-2"><button class="btn btn-ghost" onclick="startDemo()" style="width:100%;text-align:center">Continue without account →</button></div>
+    <div class="rise rise-2"><button class="btn btn-ghost" onclick="startDemo()" style="width:100%;text-align:center">Try Demo Mode
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-left:4px"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button></div>
 </div>
 </div>
 
@@ -218,7 +229,12 @@
 <div id="setup-screen" class="screen">
 <div class="container section" style="padding-top:max(48px,var(--safe-top));padding-bottom:max(48px,var(--safe-bottom))">
     <div class="rise" style="margin-bottom:48px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><p class="label">Viona</p><span id="connection-badge" class="badge"></span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <button class="btn btn-ghost" onclick="showScreen('connect-screen')" style="padding:0;font-size:10px;letter-spacing:.06em;text-transform:uppercase;min-height:44px;display:inline-flex;align-items:center">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="margin-right:4px"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Back
+            </button>
+            <span id="connection-badge" class="badge"></span>
+        </div>
         <h1 class="display display-md">Create your vibe</h1>
     </div>
     <div class="rise rise-1" style="margin-bottom:48px">
@@ -227,13 +243,27 @@
     </div>
     <div class="rise rise-2" style="margin-bottom:40px">
         <label class="label" style="display:block;margin-bottom:14px">Genres</label>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px" class="genre-chip-grid">
             <button class="chip-btn" onclick="toggleChip('genre','Pop')">Pop</button>
             <button class="chip-btn" onclick="toggleChip('genre','Jazz')">Jazz</button>
             <button class="chip-btn" onclick="toggleChip('genre','Indie')">Indie</button>
             <button class="chip-btn" onclick="toggleChip('genre','R&B')">R&B</button>
             <button class="chip-btn" onclick="toggleChip('genre','Electronic')">Electronic</button>
             <button class="chip-btn" onclick="toggleChip('genre','Classical')">Classical</button>
+            <button class="chip-btn" onclick="toggleChip('genre','Rock')">Rock</button>
+            <button class="chip-btn" onclick="toggleChip('genre','Hip-Hop')">Hip-Hop</button>
+            <button class="chip-btn" onclick="toggleChip('genre','Folk')">Folk</button>
+            <button class="chip-btn" onclick="toggleChip('genre','Latin')">Latin</button>
+            <button class="chip-btn" onclick="toggleChip('genre','Blues')">Blues</button>
+            <button class="chip-btn" onclick="toggleChip('genre','Soul')">Soul</button>
+            <button class="chip-btn" onclick="toggleChip('genre','Reggae')">Reggae</button>
+            <button class="chip-btn" onclick="toggleChip('genre','Metal')">Metal</button>
+            <button class="chip-btn" onclick="toggleChip('genre','Funk')">Funk</button>
+            <button class="chip-btn" onclick="toggleChip('genre','World')">World</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+            <input id="custom-genre-input" type="text" class="input" placeholder="Or type your own genre..." style="font-size:14px;flex:1;padding:10px 0;margin:0" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomGenre()}"/>
+            <button class="chip-btn" onclick="addCustomGenre()" style="flex-shrink:0;white-space:nowrap">+ Add</button>
         </div>
         <div id="genre-chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
     </div>
@@ -244,13 +274,17 @@
             <button class="chip-btn" onclick="toggleChip('mood','Romantic')">Romantic</button>
             <button class="chip-btn" onclick="toggleChip('mood','Energetic')">Energetic</button>
             <button class="chip-btn" onclick="toggleChip('mood','Melancholy')">Melancholy</button>
+            <button class="chip-btn" onclick="toggleChip('mood','Focus')">Focus</button>
+            <button class="chip-btn" onclick="toggleChip('mood','Uplifting')">Uplifting</button>
+            <button class="chip-btn" onclick="toggleChip('mood','Dark')">Dark</button>
+            <button class="chip-btn" onclick="toggleChip('mood','Groovy')">Groovy</button>
         </div>
         <div id="mood-chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
     </div>
     <div class="divider rise rise-3" style="margin-bottom:40px"></div>
     <div class="rise rise-4" style="margin-bottom:48px">
-        <label class="label" style="display:block;margin-bottom:12px">Describe your ideal soundtrack</label>
-        <textarea id="free-text" rows="2" class="input" placeholder="e.g. European café music, nothing too loud...">Sophisticated dinner music. European café vibe, nothing too loud.</textarea>
+        <label class="label" style="display:block;margin-bottom:12px">Describe your vibe</label>
+        <textarea id="free-text" rows="2" class="input" placeholder="e.g. Sophisticated dinner music, European café vibe, nothing too loud..."></textarea>
     </div>
     <div class="rise rise-5" style="margin-bottom:48px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
@@ -273,13 +307,13 @@
 <div class="container" style="min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding-top:max(32px,var(--safe-top));padding-bottom:max(24px,var(--safe-bottom))">
     <!-- Header row -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px" class="rise">
-        <button class="btn btn-ghost" onclick="backToSetup()" style="padding:0;font-size:12px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right:6px"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Edit</button>
+        <button class="btn btn-ghost" onclick="backToSetup()" style="padding:0;font-size:12px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right:6px"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Edit Session</button>
         <span class="label" style="color:var(--text-tertiary)">Now Playing</span>
     </div>
     <!-- Album art -->
     <div class="rise rise-1" style="display:flex;justify-content:center;margin-bottom:32px">
         <div id="album-art-container" style="width:min(280px,65vw);aspect-ratio:1;background:var(--bg-warm);border-radius:var(--radius-lg);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center">
-            <img id="album-art-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"/>
+            <img id="album-art-img" alt="Album artwork" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"/>
             <svg id="album-art-placeholder" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="1"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
         </div>
     </div>
@@ -288,10 +322,11 @@
         <h2 id="track-name" class="display display-sm" style="margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Waiting for music</h2>
         <p id="artist-name" style="font-size:14px;color:var(--text-secondary);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</p>
         <p id="album-name" style="font-size:12px;color:var(--text-tertiary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></p>
+        <p id="phase-indicator" style="display:none;font-size:11px;color:var(--text-secondary);letter-spacing:.06em;text-transform:uppercase;margin-top:8px;animation:fadeIn .5s var(--ease)"></p>
     </div>
     <!-- Progress -->
     <div class="rise rise-3" style="margin-bottom:24px">
-        <div class="progress-track" onclick="seekTrack(event)"><div id="progress-bar" class="progress-fill" style="width:0%"></div></div>
+        <div class="progress-track" id="progress-track-el"><div id="progress-bar" class="progress-fill" style="width:0%"></div></div>
         <div style="display:flex;justify-content:space-between;margin-top:8px">
             <span id="current-time" style="font-size:11px;color:var(--text-tertiary);font-variant-numeric:tabular-nums">0:00</span>
             <span id="total-time" style="font-size:11px;color:var(--text-tertiary);font-variant-numeric:tabular-nums">0:00</span>
@@ -326,21 +361,23 @@
         <div id="up-next-list" class="up-next-list-scroll" style="padding-bottom:max(8px,var(--safe-bottom))"></div>
     </div>
     <!-- Footer -->
-    <div style="margin-top:auto;padding-top:20px;text-align:center"><p style="font-size:10px;color:var(--text-tertiary);letter-spacing:.08em;text-transform:uppercase">Viona is learning your preferences</p></div>
+    <div style="margin-top:auto;padding-top:20px;text-align:center"><p style="font-size:10px;color:var(--text-tertiary);letter-spacing:.08em;text-transform:uppercase">Viona adapts to your feedback in real-time</p></div>
 </div>
 </div>
 
 <!-- ══════════ DISLIKE OVERLAY (fixed, outside page flow) ══════════ -->
-<div id="dislike-overlay" class="dislike-overlay" role="dialog" aria-label="Feedback">
+<div id="dislike-overlay" class="dislike-overlay" role="dialog" aria-modal="true" aria-label="Track feedback">
     <div class="dislike-backdrop" onclick="cancelDislike()"></div>
     <div class="dislike-panel">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
             <p class="body-sm" style="font-weight:500;color:var(--text)">What's off?</p>
-            <button onclick="cancelDislike()" style="background:0 0;border:none;cursor:pointer;color:var(--text-tertiary);font-size:22px;line-height:1;padding:4px;-webkit-tap-highlight-color:transparent" aria-label="Close">×</button>
+            <button onclick="cancelDislike()" aria-label="Close" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:0 0;border:none;cursor:pointer;color:var(--text-secondary);-webkit-tap-highlight-color:transparent">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
+            </button>
         </div>
-        <input id="reason-input" type="text" class="input" placeholder="Too slow, not my style..." style="margin-bottom:12px"/>
-        <p style="font-size:11px;color:var(--text-tertiary);margin-bottom:14px;text-align:center">Song keeps playing — only the queue adjusts</p>
-        <button onclick="submitDislike()" class="btn btn-primary" style="font-size:12px;padding:12px">Send Feedback</button>
+        <input id="reason-input" type="text" class="input" placeholder="Too slow, not my style... (optional)" style="margin-bottom:12px" aria-label="Reason for disliking"/>
+        <p style="font-size:11px;color:var(--text-secondary);margin-bottom:14px;text-align:center">This song keeps playing — we'll adjust what's next</p>
+        <button id="dislike-submit-btn" onclick="submitDislike()" class="btn btn-primary" style="font-size:12px;padding:12px">Adjust Queue</button>
     </div>
 </div>
 
@@ -351,29 +388,134 @@
 
 const ENERGY={1:{label:'Very Low',color:'#6b9dce'},2:{label:'Low',color:'#7bb87e'},3:{label:'Medium',color:'#c9a84c'},4:{label:'High',color:'#d08350'},5:{label:'Very High',color:'#c45a5a'}};
 
-/* [CHANGED] Expanded demo library with genre/mood/energy metadata for scoring */
+/* [FIXED] Diverse demo library — 11 genres, 8 moods, energies 1-5 */
 const DEMO_TRACKS=[
+    // ── Jazz ──
     {id:'d1',name:'Come Away With Me',artist:'Norah Jones',album:'Come Away With Me',duration:198,artUrl:'',genre:'Jazz',mood:'Chill',energy:2},
-    {id:'d2',name:'Feeling Good',artist:'Nina Simone',album:'I Put a Spell on You',duration:175,artUrl:'',genre:'Jazz',mood:'Energetic',energy:3},
+    {id:'d2',name:'Feeling Good',artist:'Nina Simone',album:'I Put a Spell on You',duration:175,artUrl:'',genre:'Jazz',mood:'Uplifting',energy:3},
     {id:'d3',name:'Blue in Green',artist:'Miles Davis',album:'Kind of Blue',duration:328,artUrl:'',genre:'Jazz',mood:'Melancholy',energy:1},
     {id:'d4',name:'The Girl from Ipanema',artist:'Stan Getz',album:'Getz/Gilberto',duration:212,artUrl:'',genre:'Jazz',mood:'Chill',energy:2},
     {id:'d5',name:'Corcovado',artist:'João Gilberto',album:'Getz/Gilberto',duration:198,artUrl:'',genre:'Jazz',mood:'Romantic',energy:2},
     {id:'d6',name:'So What',artist:'Miles Davis',album:'Kind of Blue',duration:564,artUrl:'',genre:'Jazz',mood:'Chill',energy:2},
     {id:'d7',name:'Fly Me to the Moon',artist:'Frank Sinatra',album:'It Might as Well Be Swing',duration:150,artUrl:'',genre:'Jazz',mood:'Romantic',energy:3},
     {id:'d8',name:'My Funny Valentine',artist:'Chet Baker',album:'Chet Baker Sings',duration:160,artUrl:'',genre:'Jazz',mood:'Romantic',energy:1},
-    {id:'d9',name:'Take Five',artist:'Dave Brubeck',album:'Time Out',duration:324,artUrl:'',genre:'Jazz',mood:'Chill',energy:3},
+    {id:'d9',name:'Take Five',artist:'Dave Brubeck',album:'Time Out',duration:324,artUrl:'',genre:'Jazz',mood:'Groovy',energy:3},
     {id:'d10',name:'Autumn Leaves',artist:'Bill Evans',album:'Portrait in Jazz',duration:304,artUrl:'',genre:'Jazz',mood:'Melancholy',energy:2},
     {id:'d11',name:'Misty',artist:'Erroll Garner',album:'Concert by the Sea',duration:180,artUrl:'',genre:'Jazz',mood:'Romantic',energy:2},
     {id:'d12',name:'Night and Day',artist:'Ella Fitzgerald',album:'Ella Fitzgerald Sings the Cole Porter Songbook',duration:198,artUrl:'',genre:'Jazz',mood:'Chill',energy:3},
-    {id:'d13',name:'Round Midnight',artist:'Thelonious Monk',album:"Monk's Music",duration:340,artUrl:'',genre:'Jazz',mood:'Melancholy',energy:1},
-    {id:'d14',name:'Stolen Moments',artist:'Oliver Nelson',album:'The Blues and the Abstract Truth',duration:556,artUrl:'',genre:'Jazz',mood:'Chill',energy:2},
+    {id:'d13',name:'Round Midnight',artist:'Thelonious Monk',album:"Monk's Music",duration:340,artUrl:'',genre:'Jazz',mood:'Dark',energy:1},
+    {id:'d14',name:'Stolen Moments',artist:'Oliver Nelson',album:'The Blues and the Abstract Truth',duration:556,artUrl:'',genre:'Jazz',mood:'Focus',energy:2},
+    // ── Pop ──
     {id:'d15',name:'Alfie',artist:'Dionne Warwick',album:'Here Where There Is Love',duration:170,artUrl:'',genre:'Pop',mood:'Romantic',energy:2},
+    {id:'d16',name:'Blinding Lights',artist:'The Weeknd',album:'After Hours',duration:200,artUrl:'',genre:'Pop',mood:'Energetic',energy:5},
+    {id:'d17',name:'Levitating',artist:'Dua Lipa',album:'Future Nostalgia',duration:203,artUrl:'',genre:'Pop',mood:'Energetic',energy:4},
+    {id:'d18',name:'Someone Like You',artist:'Adele',album:'21',duration:285,artUrl:'',genre:'Pop',mood:'Melancholy',energy:2},
+    {id:'d19',name:'Golden Hour',artist:'JVKE',album:'This Is What ____ Feels Like',duration:210,artUrl:'',genre:'Pop',mood:'Romantic',energy:2},
+    {id:'d20',name:'Cruel Summer',artist:'Taylor Swift',album:'Lover',duration:178,artUrl:'',genre:'Pop',mood:'Energetic',energy:4},
+    {id:'d21',name:'Sunflower',artist:'Post Malone',album:'Spider-Man: Into the Spider-Verse',duration:158,artUrl:'',genre:'Pop',mood:'Uplifting',energy:3},
+    {id:'d22',name:'Happy',artist:'Pharrell Williams',album:'G I R L',duration:233,artUrl:'',genre:'Pop',mood:'Uplifting',energy:4},
+    // ── Indie ──
+    {id:'d23',name:'Motion Sickness',artist:'Phoebe Bridgers',album:'Stranger in the Alps',duration:222,artUrl:'',genre:'Indie',mood:'Melancholy',energy:2},
+    {id:'d24',name:'Heat Waves',artist:'Glass Animals',album:'Dreamland',duration:234,artUrl:'',genre:'Indie',mood:'Chill',energy:3},
+    {id:'d25',name:'Myth',artist:'Beach House',album:'Bloom',duration:244,artUrl:'',genre:'Indie',mood:'Chill',energy:2},
+    {id:'d26',name:'Do I Wanna Know?',artist:'Arctic Monkeys',album:'AM',duration:272,artUrl:'',genre:'Indie',mood:'Dark',energy:3},
+    {id:'d27',name:'Tongue Tied',artist:'Grouplove',album:'Never Trust a Happy Song',duration:199,artUrl:'',genre:'Indie',mood:'Energetic',energy:5},
+    {id:'d28',name:'Dog Days Are Over',artist:'Florence + The Machine',album:'Lungs',duration:250,artUrl:'',genre:'Indie',mood:'Uplifting',energy:4},
+    // ── Electronic ──
+    {id:'d29',name:'Midnight City',artist:'M83',album:'Hurry Up, We\'re Dreaming',duration:244,artUrl:'',genre:'Electronic',mood:'Energetic',energy:4},
+    {id:'d30',name:'Strobe',artist:'Deadmau5',album:'For Lack of a Better Name',duration:637,artUrl:'',genre:'Electronic',mood:'Focus',energy:3},
+    {id:'d31',name:'Intro',artist:'The xx',album:'xx',duration:128,artUrl:'',genre:'Electronic',mood:'Chill',energy:1},
+    {id:'d32',name:'Teardrop',artist:'Massive Attack',album:'Mezzanine',duration:330,artUrl:'',genre:'Electronic',mood:'Dark',energy:2},
+    {id:'d33',name:'Around the World',artist:'Daft Punk',album:'Homework',duration:428,artUrl:'',genre:'Electronic',mood:'Groovy',energy:5},
+    {id:'d34',name:'Breathe',artist:'The Prodigy',album:'The Fat of the Land',duration:356,artUrl:'',genre:'Electronic',mood:'Energetic',energy:5},
+    {id:'d35',name:'Porcelain',artist:'Moby',album:'Play',duration:238,artUrl:'',genre:'Electronic',mood:'Chill',energy:1},
+    // ── R&B / Soul ──
+    {id:'d36',name:'Best Part',artist:'Daniel Caesar',album:'Freudian',duration:217,artUrl:'',genre:'R&B',mood:'Romantic',energy:2},
+    {id:'d37',name:'Earned It',artist:'The Weeknd',album:'Beauty Behind the Madness',duration:252,artUrl:'',genre:'R&B',mood:'Romantic',energy:2},
+    {id:'d38',name:'Pink + White',artist:'Frank Ocean',album:'Blonde',duration:193,artUrl:'',genre:'R&B',mood:'Chill',energy:2},
+    {id:'d39',name:'Love Galore',artist:'SZA',album:'Ctrl',duration:275,artUrl:'',genre:'R&B',mood:'Chill',energy:3},
+    {id:'d40',name:'Redbone',artist:'Childish Gambino',album:'Awaken, My Love!',duration:327,artUrl:'',genre:'Soul',mood:'Groovy',energy:3},
+    {id:'d41',name:'Superstition',artist:'Stevie Wonder',album:'Talking Book',duration:245,artUrl:'',genre:'Soul',mood:'Energetic',energy:4},
+    {id:'d42',name:'A Change Is Gonna Come',artist:'Sam Cooke',album:'Ain\'t That Good News',duration:192,artUrl:'',genre:'Soul',mood:'Melancholy',energy:2},
+    {id:'d43',name:'Respect',artist:'Aretha Franklin',album:'I Never Loved a Man the Way I Love You',duration:147,artUrl:'',genre:'Soul',mood:'Energetic',energy:4},
+    // ── Classical ──
+    {id:'d44',name:'Clair de Lune',artist:'Claude Debussy',album:'Suite bergamasque',duration:312,artUrl:'',genre:'Classical',mood:'Romantic',energy:1},
+    {id:'d45',name:'Gymnopédie No. 1',artist:'Erik Satie',album:'Gymnopédies',duration:195,artUrl:'',genre:'Classical',mood:'Chill',energy:1},
+    {id:'d46',name:'Adagio for Strings',artist:'Samuel Barber',album:'Orchestral Works',duration:480,artUrl:'',genre:'Classical',mood:'Melancholy',energy:2},
+    {id:'d47',name:'The Four Seasons: Spring',artist:'Antonio Vivaldi',album:'The Four Seasons',duration:208,artUrl:'',genre:'Classical',mood:'Uplifting',energy:4},
+    {id:'d48',name:'Ride of the Valkyries',artist:'Richard Wagner',album:'Die Walküre',duration:310,artUrl:'',genre:'Classical',mood:'Energetic',energy:5},
+    {id:'d49',name:'Nocturne Op. 9 No. 2',artist:'Frédéric Chopin',album:'Nocturnes',duration:275,artUrl:'',genre:'Classical',mood:'Romantic',energy:1},
+    {id:'d50',name:'Symphony No. 5',artist:'Ludwig van Beethoven',album:'Symphonies',duration:420,artUrl:'',genre:'Classical',mood:'Energetic',energy:5},
+    // ── Rock ──
+    {id:'d51',name:'Hotel California',artist:'Eagles',album:'Hotel California',duration:391,artUrl:'',genre:'Rock',mood:'Chill',energy:3},
+    {id:'d52',name:'Bohemian Rhapsody',artist:'Queen',album:'A Night at the Opera',duration:354,artUrl:'',genre:'Rock',mood:'Energetic',energy:5},
+    {id:'d53',name:'Stairway to Heaven',artist:'Led Zeppelin',album:'Led Zeppelin IV',duration:482,artUrl:'',genre:'Rock',mood:'Melancholy',energy:3},
+    {id:'d54',name:'Comfortably Numb',artist:'Pink Floyd',album:'The Wall',duration:382,artUrl:'',genre:'Rock',mood:'Dark',energy:2},
+    {id:'d55',name:'Back in Black',artist:'AC/DC',album:'Back in Black',duration:255,artUrl:'',genre:'Rock',mood:'Energetic',energy:5},
+    {id:'d56',name:'Wish You Were Here',artist:'Pink Floyd',album:'Wish You Were Here',duration:334,artUrl:'',genre:'Rock',mood:'Melancholy',energy:2},
+    {id:'d57',name:'Under the Bridge',artist:'Red Hot Chili Peppers',album:'Blood Sugar Sex Magik',duration:264,artUrl:'',genre:'Rock',mood:'Melancholy',energy:2},
+    {id:'d58',name:'Everlong',artist:'Foo Fighters',album:'The Colour and the Shape',duration:250,artUrl:'',genre:'Rock',mood:'Energetic',energy:4},
+    // ── Hip-Hop ──
+    {id:'d59',name:'Alright',artist:'Kendrick Lamar',album:'To Pimp a Butterfly',duration:219,artUrl:'',genre:'Hip-Hop',mood:'Uplifting',energy:4},
+    {id:'d60',name:'Juicy',artist:'The Notorious B.I.G.',album:'Ready to Die',duration:320,artUrl:'',genre:'Hip-Hop',mood:'Groovy',energy:3},
+    {id:'d61',name:'Sicko Mode',artist:'Travis Scott',album:'Astroworld',duration:312,artUrl:'',genre:'Hip-Hop',mood:'Energetic',energy:5},
+    {id:'d62',name:'Stan',artist:'Eminem',album:'The Marshall Mathers LP',duration:404,artUrl:'',genre:'Hip-Hop',mood:'Dark',energy:3},
+    {id:'d63',name:'No Role Modelz',artist:'J. Cole',album:'2014 Forest Hills Drive',duration:293,artUrl:'',genre:'Hip-Hop',mood:'Chill',energy:3},
+    {id:'d64',name:'Passionfruit',artist:'Drake',album:'More Life',duration:298,artUrl:'',genre:'Hip-Hop',mood:'Chill',energy:2},
+    // ── Folk ──
+    {id:'d65',name:'Fast Car',artist:'Tracy Chapman',album:'Tracy Chapman',duration:296,artUrl:'',genre:'Folk',mood:'Melancholy',energy:2},
+    {id:'d66',name:'Skinny Love',artist:'Bon Iver',album:'For Emma, Forever Ago',duration:230,artUrl:'',genre:'Folk',mood:'Melancholy',energy:1},
+    {id:'d67',name:'Ho Hey',artist:'The Lumineers',album:'The Lumineers',duration:163,artUrl:'',genre:'Folk',mood:'Uplifting',energy:3},
+    {id:'d68',name:'The Night We Met',artist:'Lord Huron',album:'Strange Trails',duration:207,artUrl:'',genre:'Folk',mood:'Romantic',energy:1},
+    {id:'d69',name:'Home',artist:'Edward Sharpe & The Magnetic Zeros',album:'Up from Below',duration:305,artUrl:'',genre:'Folk',mood:'Uplifting',energy:4},
+    {id:'d70',name:'Blowin\' in the Wind',artist:'Bob Dylan',album:'The Freewheelin\' Bob Dylan',duration:166,artUrl:'',genre:'Folk',mood:'Focus',energy:2},
+    // ── Latin ──
+    {id:'d71',name:'Despacito',artist:'Luis Fonsi',album:'Vida',duration:229,artUrl:'',genre:'Latin',mood:'Energetic',energy:4},
+    {id:'d72',name:'Bailando',artist:'Enrique Iglesias',album:'Sex and Love',duration:250,artUrl:'',genre:'Latin',mood:'Energetic',energy:4},
+    {id:'d73',name:'Bésame Mucho',artist:'Andrea Bocelli',album:'Amore',duration:218,artUrl:'',genre:'Latin',mood:'Romantic',energy:2},
+    {id:'d74',name:'Oye Como Va',artist:'Santana',album:'Abraxas',duration:256,artUrl:'',genre:'Latin',mood:'Groovy',energy:4},
+    {id:'d75',name:'Danza Kuduro',artist:'Don Omar',album:'Meet the Orphans',duration:199,artUrl:'',genre:'Latin',mood:'Energetic',energy:5},
+    // ── Blues ──
+    {id:'d76',name:'The Thrill Is Gone',artist:'B.B. King',album:'Completely Well',duration:327,artUrl:'',genre:'Blues',mood:'Melancholy',energy:2},
+    {id:'d77',name:'Crossroad Blues',artist:'Robert Johnson',album:'King of the Delta Blues Singers',duration:157,artUrl:'',genre:'Blues',mood:'Dark',energy:3},
+    {id:'d78',name:'Pride and Joy',artist:'Stevie Ray Vaughan',album:'Texas Flood',duration:217,artUrl:'',genre:'Blues',mood:'Groovy',energy:4},
+    {id:'d79',name:'Born Under a Bad Sign',artist:'Albert King',album:'Born Under a Bad Sign',duration:152,artUrl:'',genre:'Blues',mood:'Groovy',energy:3},
+    // ── Reggae ──
+    {id:'d80',name:'Three Little Birds',artist:'Bob Marley',album:'Exodus',duration:180,artUrl:'',genre:'Reggae',mood:'Uplifting',energy:2},
+    {id:'d81',name:'Is This Love',artist:'Bob Marley',album:'Kaya',duration:230,artUrl:'',genre:'Reggae',mood:'Romantic',energy:2},
+    {id:'d82',name:'Red Red Wine',artist:'UB40',album:'Labour of Love',duration:285,artUrl:'',genre:'Reggae',mood:'Chill',energy:2},
+    // ── Metal ──
+    {id:'d83',name:'Enter Sandman',artist:'Metallica',album:'Metallica',duration:332,artUrl:'',genre:'Metal',mood:'Energetic',energy:5},
+    {id:'d84',name:'Chop Suey!',artist:'System of a Down',album:'Toxicity',duration:210,artUrl:'',genre:'Metal',mood:'Energetic',energy:5},
+    {id:'d85',name:'Nothing Else Matters',artist:'Metallica',album:'Metallica',duration:388,artUrl:'',genre:'Metal',mood:'Melancholy',energy:2},
+    {id:'d86',name:'Fade to Black',artist:'Metallica',album:'Ride the Lightning',duration:418,artUrl:'',genre:'Metal',mood:'Dark',energy:3},
+    // ── Funk ──
+    {id:'d87',name:'Get Up (I Feel Like Being a) Sex Machine',artist:'James Brown',album:'Sex Machine',duration:337,artUrl:'',genre:'Funk',mood:'Groovy',energy:5},
+    {id:'d88',name:'Give Up the Funk',artist:'Parliament',album:'Mothership Connection',duration:356,artUrl:'',genre:'Funk',mood:'Groovy',energy:5},
+    {id:'d89',name:'Le Freak',artist:'Chic',album:'C\'est Chic',duration:330,artUrl:'',genre:'Funk',mood:'Energetic',energy:4},
+    {id:'d90',name:'Cissy Strut',artist:'The Meters',album:'The Meters',duration:170,artUrl:'',genre:'Funk',mood:'Groovy',energy:3},
+    // ── World ──
+    {id:'d91',name:'Pata Pata',artist:'Miriam Makeba',album:'Pata Pata',duration:175,artUrl:'',genre:'World',mood:'Uplifting',energy:4},
+    {id:'d92',name:'Chan Chan',artist:'Buena Vista Social Club',album:'Buena Vista Social Club',duration:280,artUrl:'',genre:'World',mood:'Chill',energy:2},
+    {id:'d93',name:'Mas Que Nada',artist:'Sergio Mendes',album:'Brasileiro',duration:222,artUrl:'',genre:'World',mood:'Groovy',energy:4},
+    {id:'d94',name:'Waka Waka',artist:'Shakira',album:'Sale el Sol',duration:212,artUrl:'',genre:'World',mood:'Energetic',energy:5},
+    {id:'d95',name:'Djembe',artist:'Salif Keita',album:'Moffou',duration:340,artUrl:'',genre:'World',mood:'Chill',energy:2},
 ];
 
 const phases={1:{duration:20,energy:2},2:{duration:40,energy:4},3:{duration:20,energy:1}};
 const activeChips={genre:new Set(['Jazz']),mood:new Set(['Chill'])};
-let currentTrackIndex=0,isPlaying=false,serviceMode='demo',musicInstance=null,spotifyToken=null,playbackInterval=null,currentQueue=[];
+let currentTrackIndex=0,isPlaying=false,serviceMode='demo',musicInstance=null,playbackInterval=null,currentQueue=[];
 let _feedbackDebounce=false; // debounce flag for rapid like/dislike taps
+
+/* [FIXED] HTML5 Audio element for preview playback */
+const audioEl = new Audio();
+audioEl.crossOrigin = 'anonymous';
+audioEl.volume = 1.0;
+let usingRealAudio = false; // true when audioEl is driving playback
+
+/* [FIXED] Session clock — tracks elapsed seconds since session start for energy-phase mapping */
+let sessionStartTime = 0;   // Date.now() when session begins
+let sessionElapsedSec = 0;  // updated every tick
 
 /* ═══════════════════════════════════════════════════════════════
    [NEW] PREFERENCE ENGINE
@@ -433,31 +575,186 @@ function incrementMap(map, key, val) {
     map.set(key, (map.get(key) || 0) + val);
 }
 
-/** Infer genre from track metadata text (name, artist, album) */
+/** Infer genre from track metadata text (name, artist, album) — broad keyword map + artist lookup */
 function inferGenre(track) {
     const text = `${track.name} ${track.artist} ${track.album || ''}`.toLowerCase();
-    const genreWords = ['jazz','pop','indie','electronic','classical','r&b','soul','rock','folk','blues','hip-hop','latin','bossa'];
-    for (const g of genreWords) { if (text.includes(g)) return g; }
-    // fall back to session genres
+    const genreMap = {
+        'jazz':['jazz','swing','bebop','bossa','bossa nova','big band','blue note'],
+        'pop':['pop','hit','top 40','chart'],
+        'indie':['indie','alternative','alt-','lo-fi','lofi','shoegaze','dream pop'],
+        'electronic':['electronic','electro','edm','house','techno','synth','ambient','trance','dubstep','dnb','drum and bass','chillwave'],
+        'classical':['classical','symphony','concerto','sonata','opus','orchestr','philharmon','chamber','baroque','romantic era','piano solo','nocturne'],
+        'r&b':['r&b','rnb','neo-soul','neo soul','motown'],
+        'soul':['soul','soul music','tamla'],
+        'rock':['rock','grunge','garage','hard rock','classic rock','prog rock','psychedelic'],
+        'metal':['metal','metallic','thrash','death metal','heavy metal','doom','black metal','nu-metal'],
+        'punk':['punk','hardcore','post-punk','pop punk','emo'],
+        'folk':['folk','acoustic','singer-songwriter','country','bluegrass','americana','campfire'],
+        'blues':['blues','delta blues','chicago blues','twelve-bar','12-bar'],
+        'hip-hop':['hip-hop','hip hop','rap','trap','boom bap','mc ','emcee','grime','drill'],
+        'latin':['latin','salsa','reggaeton','cumbia','bachata','merengue','samba','tango','bossa','mariachi','corrido'],
+        'reggae':['reggae','ska','dub','dancehall','rocksteady','roots'],
+        'funk':['funk','funky','p-funk','disco','boogie'],
+        'world':['world','afrobeat','afro','highlife','qawwali','flamenco','fado','celtic','balkan','klezmer','raga','gamelan']
+    };
+    for (const [genre, words] of Object.entries(genreMap)) {
+        if (words.some(w => text.includes(w))) return genre;
+    }
+    // Known artist → genre lookup for common cases
+    const artistGenre = {
+        // Jazz
+        'norah jones':'jazz','miles davis':'jazz','chet baker':'jazz','dave brubeck':'jazz',
+        'bill evans':'jazz','ella fitzgerald':'jazz','frank sinatra':'jazz','nina simone':'jazz',
+        'thelonious monk':'jazz','oliver nelson':'jazz','stan getz':'jazz','erroll garner':'jazz',
+        'joão gilberto':'jazz','john coltrane':'jazz','herbie hancock':'jazz','charlie parker':'jazz',
+        'duke ellington':'jazz','louis armstrong':'jazz','billie holiday':'jazz','wynton marsalis':'jazz',
+        // Pop
+        'the weeknd':'pop','dua lipa':'pop','taylor swift':'pop','adele':'pop','ed sheeran':'pop',
+        'billie eilish':'pop','harry styles':'pop','olivia rodrigo':'pop','ariana grande':'pop',
+        'justin bieber':'pop','selena gomez':'pop','pharrell':'pop','post malone':'pop',
+        'dionne warwick':'pop','jvke':'pop',
+        // Indie
+        'phoebe bridgers':'indie','glass animals':'indie','beach house':'indie','arctic monkeys':'indie',
+        'tame impala':'indie','radiohead':'indie','the strokes':'indie','bon iver':'indie',
+        'sufjan stevens':'indie','fleet foxes':'indie','vampire weekend':'indie','grouplove':'indie',
+        'florence + the machine':'indie','florence and the machine':'indie',
+        // Electronic
+        'deadmau5':'electronic','m83':'electronic','the xx':'electronic','massive attack':'electronic',
+        'daft punk':'electronic','aphex twin':'electronic','boards of canada':'electronic','moby':'electronic',
+        'four tet':'electronic','bonobo':'electronic','the prodigy':'electronic','tiësto':'electronic',
+        'calvin harris':'electronic','skrillex':'electronic',
+        // R&B / Soul
+        'frank ocean':'r&b','sza':'r&b','daniel caesar':'r&b','childish gambino':'soul',
+        'stevie wonder':'soul','sam cooke':'soul','aretha franklin':'soul','marvin gaye':'soul',
+        'al green':'soul','otis redding':'soul','ray charles':'soul','whitney houston':'r&b',
+        'alicia keys':'r&b','usher':'r&b','beyoncé':'r&b','beyonce':'r&b',
+        // Classical
+        'debussy':'classical','satie':'classical','vivaldi':'classical','barber':'classical',
+        'wagner':'classical','beethoven':'classical','mozart':'classical','chopin':'classical',
+        'bach':'classical','tchaikovsky':'classical','brahms':'classical','schubert':'classical',
+        // Rock
+        'eagles':'rock','queen':'rock','led zeppelin':'rock','pink floyd':'rock','ac/dc':'rock',
+        'red hot chili peppers':'rock','foo fighters':'rock','nirvana':'rock','u2':'rock',
+        'the rolling stones':'rock','the beatles':'rock','jimi hendrix':'rock','aerosmith':'rock',
+        'david bowie':'rock','bruce springsteen':'rock','the who':'rock',
+        // Hip-Hop
+        'kendrick lamar':'hip-hop','notorious b.i.g':'hip-hop','travis scott':'hip-hop',
+        'eminem':'hip-hop','j. cole':'hip-hop','drake':'hip-hop','kanye west':'hip-hop',
+        'jay-z':'hip-hop','nas':'hip-hop','tyler, the creator':'hip-hop','a$ap rocky':'hip-hop',
+        'lil wayne':'hip-hop','50 cent':'hip-hop','outkast':'hip-hop',
+        // Folk
+        'tracy chapman':'folk','bon iver':'folk','the lumineers':'folk','lord huron':'folk',
+        'edward sharpe':'folk','bob dylan':'folk','joni mitchell':'folk','nick drake':'folk',
+        'iron & wine':'folk','simon & garfunkel':'folk','cat stevens':'folk',
+        // Latin
+        'luis fonsi':'latin','enrique iglesias':'latin','andrea bocelli':'latin','santana':'latin',
+        'don omar':'latin','bad bunny':'latin','j balvin':'latin','shakira':'latin','daddy yankee':'latin',
+        // Blues
+        'b.b. king':'blues','robert johnson':'blues','stevie ray vaughan':'blues','albert king':'blues',
+        'muddy waters':'blues','howlin\' wolf':'blues','john lee hooker':'blues','buddy guy':'blues',
+        // Reggae
+        'bob marley':'reggae','ub40':'reggae','peter tosh':'reggae','jimmy cliff':'reggae','toots':'reggae',
+        // Metal
+        'metallica':'metal','system of a down':'metal','slayer':'metal','iron maiden':'metal',
+        'black sabbath':'metal','megadeth':'metal','pantera':'metal','tool':'metal',
+        // Funk
+        'james brown':'funk','parliament':'funk','chic':'funk','the meters':'funk',
+        'earth, wind & fire':'funk','kool & the gang':'funk','prince':'funk','bootsy collins':'funk',
+        // World
+        'miriam makeba':'world','buena vista social club':'world','sergio mendes':'world',
+        'salif keita':'world','fela kuti':'world','ravi shankar':'world','nusrat fateh ali khan':'world',
+        'cesaria evora':'world','youssou n\'dour':'world',
+    };
+    const artistLower = (track.artist || '').toLowerCase();
+    for (const [a, g] of Object.entries(artistGenre)) {
+        if (artistLower.includes(a)) return g;
+    }
+    // Check custom genres from user input
+    for (const customGenre of activeChips.genre) {
+        if (text.includes(customGenre.toLowerCase())) return customGenre.toLowerCase();
+    }
     return [...activeChips.genre][0] || '';
 }
 
-/** Infer mood from track metadata text */
+/** Infer mood from track metadata text — broad keyword map + duration heuristic */
 function inferMood(track) {
     const text = `${track.name} ${track.artist} ${track.album || ''}`.toLowerCase();
-    const moodWords = {chill:['chill','calm','relax','easy','soft'],romantic:['love','heart','romance','kiss','dream'],energetic:['energy','dance','fire','wild','fast'],melancholy:['blue','sad','rain','cry','alone','dark','night','midnight']};
-    for (const [mood, words] of Object.entries(moodWords)) { if (words.some(w => text.includes(w))) return mood; }
-    return [...activeChips.mood][0] || '';
+    const moodWords = {
+        chill:['chill','calm','relax','easy','soft','gentle','peaceful','quiet','ambient','lo-fi','lofi','smooth','mellow','breeze','float','drift','lazy','sunday','coast'],
+        romantic:['love','heart','romance','kiss','dream','darling','baby','sweetheart','tender','forever','beautiful','serenade','moonlight','valentine','desire','passion','my girl','my love','honey'],
+        energetic:['energy','dance','fire','wild','fast','party','bounce','jump','hype','move','beat','bang','rave','power','thunder','ride','scream','run','rush','riot','rage','smash'],
+        melancholy:['blue','sad','rain','cry','alone','lonely','lost','broken','tears','shadow','grey','gray','cold','empty','pain','miss','gone','farewell','goodbye','sorrow','hurt','regret','weep'],
+        focus:['focus','concentrate','study','work','think','mind','deep','meditat','contempl','zone','flow','steady','minimal','ambient','instrumental'],
+        uplifting:['uplift','happy','joy','sun','bright','hope','free','alive','celebrate','wonderful','amazing','beautiful day','shine','smile','glory','triumph','rise','soar','fly','freedom','wonderful'],
+        dark:['dark','night','midnight','shadow','evil','demon','hell','doom','death','fear','nightmare','haunt','wicked','sinister','venom','abyss','black','blood','phantom','ghost'],
+        groovy:['groove','groovy','funky','funk','disco','boogie','swing','strut','bass','rhythm','jam','vibe','slick','tight','pocket','bounce','step']
+    };
+    for (const [mood, words] of Object.entries(moodWords)) {
+        if (words.some(w => text.includes(w))) return mood;
+    }
+    // Energy-based heuristic
+    const e = track.energy || 0;
+    if (e >= 4) return 'energetic';
+    if (e <= 1) return 'chill';
+    // Duration heuristic
+    const dur = track.duration || 200;
+    if (dur < 150) return 'energetic';
+    if (dur > 400) return 'chill';
+    return [...activeChips.mood][0] || 'chill';
 }
 
 /**
- * scoreTrack(track)
+ * [FIXED] ENERGY-PHASE INTEGRATION
+ * Maps the session timeline to the user's energy-flow curve so the queue
+ * actually follows the Start → Peak → End arc the user configured.
+ */
+
+/** Returns the target energy level (1-5) for a given elapsed-seconds value */
+function getTargetEnergyAtTime(elapsedSec) {
+    const p1End = phases[1].duration * 60;          // seconds
+    const p2End = p1End + phases[2].duration * 60;
+    const p3End = p2End + phases[3].duration * 60;
+
+    if (elapsedSec < p1End) return phases[1].energy;
+    if (elapsedSec < p2End) return phases[2].energy;
+    return phases[3].energy;
+}
+
+/** Returns the target energy for a track at a given queue index,
+ *  by summing durations of all tracks before it. */
+function getTargetEnergyForIndex(idx) {
+    let cumSec = 0;
+    for (let i = 0; i < idx && i < currentQueue.length; i++) {
+        cumSec += (currentQueue[i].duration || 180);
+    }
+    return getTargetEnergyAtTime(cumSec);
+}
+
+/** Returns the current phase target energy based on real elapsed session time */
+function getCurrentPhaseEnergy() {
+    if (!sessionStartTime) return phases[1].energy;
+    const elapsed = (Date.now() - sessionStartTime) / 1000;
+    return getTargetEnergyAtTime(elapsed);
+}
+
+/** Returns the effective energy of a track (uses metadata or infers) */
+function getTrackEnergy(track) {
+    if (track.energy && track.energy >= 1 && track.energy <= 5) return track.energy;
+    // Infer from mood if no energy tag
+    const mood = (track.mood || inferMood(track)).toLowerCase();
+    const moodEnergy = {chill:2, romantic:2, melancholy:1, energetic:4};
+    return moodEnergy[mood] || 3;
+}
+
+/**
+ * scoreTrack(track, targetEnergy)
  * Returns a numeric score for ranking a track in the upcoming queue.
+ * [FIXED] Now accepts targetEnergy from the phase system.
  *
  * ──── TUNING WEIGHTS ────────────────────────────────────────────
  * Adjust these constants to change how aggressively feedback affects the queue.
  */
-function scoreTrack(track) {
+function scoreTrack(track, targetEnergy) {
     /* ── WEIGHTS (tweak these) ──────────── */
     const W_LIKED_ARTIST   =  3.0;  // bonus per like-count for matching artist
     const W_DISLIKED_ARTIST = -4.0;  // penalty per dislike-count for matching artist
@@ -472,6 +769,8 @@ function scoreTrack(track) {
     const W_REASON_PENALTY = -1.0;   // penalty per matching reason keyword
     const W_EXPLORATION    =  0.3;   // small random factor
     const W_WIDEN_ON_DISLIKES = 0.15; // extra exploration per consecutive dislike
+    const W_ENERGY_MATCH   =  4.0;   // [FIXED] bonus for energy matching the current phase
+    const W_ENERGY_PENALTY = -1.5;   // [FIXED] penalty per energy-level distance from target
     /* ──────────────────────────────────── */
 
     let score = 0;
@@ -504,11 +803,47 @@ function scoreTrack(track) {
         score += preferences.dislikedMoods.get(mood) * W_DISLIKED_MOOD;
 
     // Session anchoring — keep tracks that fit the original vibe
+    // [FIXED] Use genre affinity: related genres get partial bonus
+    const GENRE_AFFINITY = {
+        'jazz':['blues','soul','r&b','funk','latin'],
+        'blues':['jazz','soul','rock','folk'],
+        'soul':['r&b','funk','jazz','blues','pop'],
+        'r&b':['soul','hip-hop','pop','funk'],
+        'funk':['soul','r&b','disco','electronic','groovy'],
+        'rock':['metal','indie','blues','punk','folk'],
+        'metal':['rock','punk'],
+        'punk':['rock','metal','indie'],
+        'indie':['rock','folk','electronic','pop'],
+        'folk':['indie','blues','country','rock'],
+        'electronic':['pop','indie','hip-hop','funk'],
+        'hip-hop':['r&b','electronic','pop','soul'],
+        'pop':['r&b','electronic','indie','soul'],
+        'latin':['jazz','world','pop','reggae'],
+        'reggae':['latin','world','soul','funk'],
+        'classical':['world'],
+        'world':['latin','reggae','jazz','folk','classical'],
+    };
     for (const sg of activeChips.genre) {
-        if (genre.includes(sg.toLowerCase())) score += W_SESSION_GENRE;
+        const sgLower = sg.toLowerCase();
+        if (genre === sgLower) {
+            score += W_SESSION_GENRE; // exact match
+        } else if (GENRE_AFFINITY[sgLower] && GENRE_AFFINITY[sgLower].includes(genre)) {
+            score += W_SESSION_GENRE * 0.5; // related genre: half bonus
+        }
     }
     for (const sm of activeChips.mood) {
         if (mood.includes(sm.toLowerCase())) score += W_SESSION_MOOD;
+    }
+
+    // [FIXED] Energy-phase matching — the core of the "AI model"
+    if (typeof targetEnergy === 'number' && targetEnergy >= 1) {
+        const trackEnergy = getTrackEnergy(track);
+        const distance = Math.abs(trackEnergy - targetEnergy);
+        if (distance === 0) {
+            score += W_ENERGY_MATCH;
+        } else {
+            score += distance * W_ENERGY_PENALTY;
+        }
     }
 
     // Reason-signal penalties (e.g. user said "too slow" — penalize tracks with "slow" in name)
@@ -539,13 +874,29 @@ function rerankUpcomingQueue() {
     if (!currentQueue.length || currentQueue.length <= currentTrackIndex + 1) return;
 
     const upcoming = currentQueue.slice(currentTrackIndex + 1);
-    // Score and sort
-    upcoming.sort((a, b) => scoreTrack(b) - scoreTrack(a));
+
+    // [FIXED] Score each track against the energy target for its tentative position
+    // First pass: score with a rough target (current phase energy)
+    const currentTarget = getCurrentPhaseEnergy();
+    upcoming.sort((a, b) => scoreTrack(b, currentTarget) - scoreTrack(a, currentTarget));
+
+    // [FIXED] Second pass: refine — compute per-slot target energy and re-sort
+    // We build cumulative duration from the current track forward
+    let cumSec = 0;
+    for (let i = 0; i <= currentTrackIndex && i < currentQueue.length; i++) {
+        cumSec += (currentQueue[i].duration || 180);
+    }
+    const scored = upcoming.map((t, i) => {
+        const slotSec = cumSec + upcoming.slice(0, i).reduce((s, tr) => s + (tr.duration || 180), 0);
+        const target = getTargetEnergyAtTime(slotSec);
+        return { track: t, score: scoreTrack(t, target) };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    const sorted = scored.map(s => s.track);
 
     // Artist-spread: greedily reorder so same artist doesn't appear within N consecutive slots
     const spread = [];
-    const remaining = [...upcoming];
-    // The "anchor" artist is whoever is currently playing
+    const remaining = [...sorted];
     const currentArtist = currentQueue[currentTrackIndex]
         ? (currentQueue[currentTrackIndex].artist || '').toLowerCase()
         : '';
@@ -558,7 +909,6 @@ function rerankUpcomingQueue() {
             const recent = recentArtists.slice(-MAX_CONSECUTIVE_SAME_ARTIST);
             if (!recent.includes(a)) { picked = i; break; }
         }
-        // If every remaining track repeats, just take the top-scored one
         if (picked === -1) picked = 0;
         const track = remaining.splice(picked, 1)[0];
         recentArtists.push((track.artist || '').toLowerCase());
@@ -644,42 +994,28 @@ function showScreen(id){
 /* ═══════════════════════════════════════════════════════════════
    CONNECT SCREEN
    ═══════════════════════════════════════════════════════════════ */
-function showServiceSetup(s){
-    document.getElementById('spotify-setup').style.display=s==='spotify'?'block':'none';
-}
-function checkSpotifyReady(){document.getElementById('spotify-connect-btn').disabled=document.getElementById('spotify-client-id').value.trim().length<10}
-
-function connectSpotify(){
-    const clientId=document.getElementById('spotify-client-id').value.trim();
-    let redirectUri=document.getElementById('spotify-redirect').value.trim();
-    if(!redirectUri)redirectUri=window.location.href.split('?')[0];
-    const scopes='streaming user-read-email user-read-private user-library-read';
-    const v=genStr(128);sessionStorage.setItem('sp_v',v);sessionStorage.setItem('sp_c',clientId);sessionStorage.setItem('sp_r',redirectUri);
-    genChallenge(v).then(ch=>{const p=new URLSearchParams({response_type:'code',client_id:clientId,scope:scopes,redirect_uri:redirectUri,code_challenge_method:'S256',code_challenge:ch});window.location.href='https://accounts.spotify.com/authorize?'+p.toString()});
-}
-function genStr(n){const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';let t='';for(let i=0;i<n;i++)t+=c.charAt(Math.floor(Math.random()*c.length));return t}
-async function genChallenge(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));return btoa(String.fromCharCode(...new Uint8Array(d))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
-
-async function handleSpotifyCallback(){
-    const code=new URLSearchParams(window.location.search).get('code');if(!code)return false;
-    const c=sessionStorage.getItem('sp_c'),r=sessionStorage.getItem('sp_r'),v=sessionStorage.getItem('sp_v');if(!c||!v)return false;
-    try{const res=await fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',code,redirect_uri:r,client_id:c,code_verifier:v})});
-    const d=await res.json();if(d.access_token){spotifyToken=d.access_token;serviceMode='spotify';window.history.replaceState({},'',window.location.pathname);setBadge('spotify');showScreen('setup-screen');return true}else{showToast('Spotify auth failed — try demo mode')}}catch(e){console.error(e);showToast('Spotify connection error')}return false;
-}
 
 /* ─────────────────────────────────────────────────────────────
    APPLE MUSIC — EMBEDDED DEVELOPER TOKEN
    ─────────────────────────────────────────────────────────────
    Replace the placeholder below with your actual JWT.
-   Generate with your .p8 key: the token is yours as the
-   developer — users authenticate via Apple's popup.
+   Generate with your .p8 key at https://developer.apple.com
+   The token is yours as the developer — users authenticate
+   via Apple's popup.
    ───────────────────────────────────────────────────────────── */
-const APPLE_DEVELOPER_TOKEN = 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjU0S0hRN0JHUTMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiI4RDc1U1FVV1laIiwiaWF0IjoxNzcwNjIzNzA0LCJleHAiOjE3ODYxNzU3MDR9.aoBpWR_os5M9fml6zrcnWQ1T2qybzaiNpJRkNoqFC1R2li0L2CafYd_Os_1CuOOOz8685d9yEtIU57Qk_r6tOA';
+const APPLE_DEVELOPER_TOKEN = 'PASTE_YOUR_JWT_HERE';
 
 async function connectAppleMusic(){
     const btn = document.getElementById('apple-connect-btn-main');
     const errEl = document.getElementById('apple-error');
     errEl.style.display='none';
+
+    // [FIXED] Check for placeholder token before attempting connection
+    if (APPLE_DEVELOPER_TOKEN === 'PASTE_YOUR_JWT_HERE') {
+        errEl.style.display='block';
+        errEl.textContent = 'Apple Music requires a developer token. Add your JWT to the code, or use Demo mode.';
+        return;
+    }
 
     // Show loading state on the button
     const origHTML = btn.innerHTML;
@@ -706,7 +1042,7 @@ async function connectAppleMusic(){
 }
 
 function startDemo(){serviceMode='demo';setBadge('demo');showScreen('setup-screen')}
-function setBadge(m){const b=document.getElementById('connection-badge');if(m==='spotify'){b.className='badge badge-spotify';b.innerHTML='● Spotify'}else if(m==='apple'){b.className='badge badge-apple';b.innerHTML='● Apple Music'}else{b.className='badge badge-demo';b.innerHTML='◌ Demo'}}
+function setBadge(m){const b=document.getElementById('connection-badge');if(m==='apple'){b.className='badge badge-apple';b.innerHTML='● Apple Music'}else{b.className='badge badge-demo';b.innerHTML='◌ Demo'}}
 
 /* ═══════════════════════════════════════════════════════════════
    SESSION
@@ -715,12 +1051,99 @@ async function startSession(){
     currentTrackIndex=0;
     resetPreferences();
     resetFeedbackUI();
+    sessionStartTime = Date.now(); // [FIXED] start session clock
     showScreen('playback-screen');
-    if(serviceMode==='demo'){currentQueue=[...DEMO_TRACKS];loadTrack(0)}
+
+    if(serviceMode==='demo'){
+        currentQueue = buildPhaseAwareQueue([...DEMO_TRACKS]);
+        showToast('Demo mode — playback is simulated');
+        loadTrack(0);
+    }
     else if(serviceMode==='apple')await loadAppleMusicQueue();
-    else if(serviceMode==='spotify')await loadSpotifyQueue();
 }
-function backToSetup(){stopPlayback();showScreen('setup-screen')}
+
+/**
+ * [FIXED] buildPhaseAwareQueue(pool)
+ * Takes a pool of tracks and returns them ordered to follow the
+ * user's energy-flow curve (Start → Peak → End).
+ * Also filters by session genre/mood chips when possible.
+ */
+function buildPhaseAwareQueue(pool) {
+    const selectedGenres = new Set([...activeChips.genre].map(g => g.toLowerCase()));
+    const selectedMoods = new Set([...activeChips.mood].map(m => m.toLowerCase()));
+
+    // Build set of all acceptable genres (selected + related via affinity)
+    const GENRE_AFFINITY = {
+        'jazz':['blues','soul','r&b','funk','latin'],
+        'blues':['jazz','soul','rock','folk'],
+        'soul':['r&b','funk','jazz','blues','pop'],
+        'r&b':['soul','hip-hop','pop','funk'],
+        'funk':['soul','r&b','disco','electronic'],
+        'rock':['metal','indie','blues','punk','folk'],
+        'metal':['rock','punk'],
+        'punk':['rock','metal','indie'],
+        'indie':['rock','folk','electronic','pop'],
+        'folk':['indie','blues','country','rock'],
+        'electronic':['pop','indie','hip-hop','funk'],
+        'hip-hop':['r&b','electronic','pop','soul'],
+        'pop':['r&b','electronic','indie','soul'],
+        'latin':['jazz','world','pop','reggae'],
+        'reggae':['latin','world','soul','funk'],
+        'classical':['world'],
+        'world':['latin','reggae','jazz','folk','classical'],
+    };
+    const expandedGenres = new Set(selectedGenres);
+    for (const g of selectedGenres) {
+        if (GENRE_AFFINITY[g]) GENRE_AFFINITY[g].forEach(r => expandedGenres.add(r));
+    }
+
+    // Step 1: prefer tracks matching selected genres/moods (with affinity)
+    let candidates = pool.filter(t => {
+        const g = (t.genre || inferGenre(t)).toLowerCase();
+        const m = (t.mood || inferMood(t)).toLowerCase();
+        const genreOk = selectedGenres.size === 0 || selectedGenres.has(g) || expandedGenres.has(g);
+        const moodOk = selectedMoods.size === 0 || selectedMoods.has(m);
+        return genreOk || moodOk;
+    });
+    // Separate into exact matches and affinity-only matches for sorting priority
+    const exactMatch = candidates.filter(t => {
+        const g = (t.genre || inferGenre(t)).toLowerCase();
+        return selectedGenres.has(g);
+    });
+    const affinityOnly = candidates.filter(t => {
+        const g = (t.genre || inferGenre(t)).toLowerCase();
+        return !selectedGenres.has(g);
+    });
+    // Prioritize exact matches but keep affinity ones available
+    candidates = [...exactMatch, ...affinityOnly];
+    // If too few matched, use whole pool
+    if (candidates.length < 6) candidates = [...pool];
+
+    // Step 2: build timeline slots from the 3 phases
+    const slots = [];
+    for (let p = 1; p <= 3; p++) {
+        const phaseDurSec = phases[p].duration * 60;
+        const phaseEnergy = phases[p].energy;
+        let filled = 0;
+        while (filled < phaseDurSec && candidates.length > 0) {
+            // Find best candidate for this energy level
+            let bestIdx = 0, bestScore = -Infinity;
+            for (let i = 0; i < candidates.length; i++) {
+                const e = getTrackEnergy(candidates[i]);
+                const dist = Math.abs(e - phaseEnergy);
+                const s = -dist + (Math.random() * 0.5); // slight randomness to avoid same order
+                if (s > bestScore) { bestScore = s; bestIdx = i; }
+            }
+            const picked = candidates.splice(bestIdx, 1)[0];
+            slots.push(picked);
+            filled += (picked.duration || 180);
+        }
+    }
+    // Append any remaining candidates at the end
+    slots.push(...candidates);
+    return slots;
+}
+function backToSetup(){stopPlayback();stopAudio();showScreen('setup-screen')}
 function buildSearchQuery(){return[document.getElementById('intent-input').value,[...activeChips.genre].join(' '),[...activeChips.mood].join(' '),document.getElementById('free-text').value].filter(Boolean).join(' ').substring(0,100)}
 
 /* ═══════════════════════════════════════════════════════════════
@@ -730,27 +1153,125 @@ async function loadAppleMusicQueue(){
     showLoadingState();
     try{
         const q=buildSearchQuery(),sf=musicInstance.storefrontId||'us';
-        const r=await musicInstance.api.music('/v1/catalog/'+sf+'/search',{term:q,types:['songs'],limit:25});
+        const r=await musicInstance.api.music('/v1/catalog/'+sf+'/search',{term:q,types:['songs'],limit:50});
         const s=r?.data?.results?.songs?.data||[];
-        currentQueue=s.length>0?s.map(mapApple):[...DEMO_TRACKS];
+        const mapped = s.length>0 ? s.map(mapApple) : [...DEMO_TRACKS];
+        currentQueue = buildPhaseAwareQueue(mapped); // [FIXED] phase-aware ordering
         if(s.length===0) showToast('No results — using demo tracks');
         if(currentQueue.length>0)loadAppleTrack(0);
     }catch(e){
         console.error('Apple Music load error:',e);
-        currentQueue=[...DEMO_TRACKS];
+        serviceMode = 'demo'; // Switch to demo so playback controls work correctly
+        setBadge('demo');
+        currentQueue=buildPhaseAwareQueue([...DEMO_TRACKS]);
         showToast('Apple Music error — using demo tracks');
         loadTrack(0);
     }
 }
-function mapApple(s){const a=s.attributes;return{id:s.id,name:a.name,artist:a.artistName,album:a.albumName||'',duration:Math.round((a.durationInMillis||0)/1000),artUrl:a.artwork?.url?a.artwork.url.replace('{w}','600').replace('{h}','600'):'',catalogId:s.id,genre:a.genreNames?.[0]||'',mood:''}}
+/** Apple mapping with energy + mood inference from genre + duration */
+function mapApple(s){
+    const a=s.attributes;
+    const dur = Math.round((a.durationInMillis||0)/1000);
+    const genreName = (a.genreNames?.[0]||'').toLowerCase();
+    // Normalize Apple genre names (e.g., "Hip-Hop/Rap" → "hip-hop")
+    let genre = a.genreNames?.[0]||'';
+    if (genreName.includes('hip-hop') || genreName.includes('rap')) genre = 'Hip-Hop';
+    else if (genreName.includes('r&b') || genreName.includes('soul')) genre = 'R&B';
+    else if (genreName.includes('alternative') || genreName.includes('indie')) genre = 'Indie';
+    else if (genreName.includes('dance') || genreName.includes('electronic')) genre = 'Electronic';
+    else if (genreName.includes('singer') || genreName.includes('songwriter')) genre = 'Folk';
+    else if (genreName.includes('latin') || genreName.includes('reggaeton')) genre = 'Latin';
+    else if (genreName.includes('metal')) genre = 'Metal';
+    else if (genreName.includes('punk')) genre = 'Rock';
+
+    // Infer energy from genre + duration
+    let energy = 3;
+    const highEnergyGenres = ['pop','dance','electronic','hip-hop','rock','metal','punk','reggaeton'];
+    const lowEnergyGenres = ['classical','ambient','jazz','new age','easy listening','singer/songwriter'];
+    if (highEnergyGenres.some(g => genreName.includes(g))) energy = 4;
+    if (lowEnergyGenres.some(g => genreName.includes(g))) energy = 2;
+    if (dur > 360) energy = Math.max(1, energy - 1);
+    if (dur < 180) energy = Math.min(5, energy + 1);
+
+    // Infer mood from genre + track name
+    const trackText = `${a.name} ${a.artistName} ${a.albumName||''}`.toLowerCase();
+    let mood = '';
+    const moodFromGenre = {
+        'classical':'chill','ambient':'chill','easy listening':'chill','new age':'chill',
+        'dance':'energetic','metal':'energetic','punk':'energetic',
+        'jazz':'chill','blues':'melancholy','folk':'melancholy',
+        'r&b':'romantic','soul':'romantic',
+        'reggae':'chill','latin':'groovy','funk':'groovy',
+    };
+    for (const [g, m] of Object.entries(moodFromGenre)) {
+        if (genreName.includes(g)) { mood = m; break; }
+    }
+    // Override with track-name keywords if detected
+    const moodKeywords = {
+        energetic:['party','dance','fire','wild','remix','club'],
+        romantic:['love','heart','kiss','baby','dream','forever'],
+        melancholy:['sad','cry','alone','rain','gone','lost','broken'],
+        chill:['chill','relax','easy','soft','calm','smooth'],
+        dark:['dark','night','shadow','demon','death','nightmare'],
+        uplifting:['happy','sun','bright','joy','free','alive','hope'],
+    };
+    for (const [m, words] of Object.entries(moodKeywords)) {
+        if (words.some(w => trackText.includes(w))) { mood = m; break; }
+    }
+
+    return {
+        id:s.id, name:a.name,
+        artist:a.artistName,
+        album:a.albumName||'',
+        duration:dur,
+        artUrl:a.artwork?.url?a.artwork.url.replace('{w}','600').replace('{h}','600'):'',
+        catalogId:s.id,
+        genre: genre,
+        mood: mood,
+        energy: energy
+    };
+}
 async function loadAppleTrack(i){
-    if(i>=currentQueue.length){showToast('Session complete');return}
+    // Queue recycling (same logic as loadTrack)
+    if(i>=currentQueue.length){
+        const pool = currentQueue.filter(t => !preferences.dislikedTrackIds.has(t.id || t.name));
+        if (pool.length < 3) {
+            // Not enough Apple tracks left — fall back to demo
+            serviceMode = 'demo';
+            setBadge('demo');
+            currentQueue = buildPhaseAwareQueue([...DEMO_TRACKS]);
+            showToast('Session complete — restarting with demo tracks');
+            loadTrack(0);
+            return;
+        } else {
+            sessionStartTime = Date.now();
+            currentQueue = buildPhaseAwareQueue(pool);
+            showToast('Reshuffling queue based on your feedback');
+        }
+        i = 0;
+    }
+    // Safety: if track has no catalogId, fall back to demo playback
+    if (!currentQueue[i].catalogId) {
+        loadTrack(i);
+        return;
+    }
     currentTrackIndex=i;
     updateTrackUI(currentQueue[i]);
     resetFeedbackUI();
     updateUpNext();
-    try{await musicInstance.setQueue({songs:[currentQueue[i].catalogId]});await musicInstance.play();setPlayingState(true);startAppleMonitor()}
-    catch(e){simulatePlayback(currentQueue[i].duration);setPlayingState(true)}
+    try{
+        await musicInstance.setQueue({songs:[currentQueue[i].catalogId]});
+        await musicInstance.play();
+        setPlayingState(true);
+        startAppleMonitor();
+    } catch(e){
+        console.warn('Apple Music playback error for track:', currentQueue[i].name, e);
+        showToast('Skipping — couldn\'t play this track');
+        // Skip to next instead of simulating silence
+        setTimeout(() => {
+            loadAppleTrack(currentTrackIndex + 1);
+        }, 500);
+    }
 }
 function startAppleMonitor(){
     clearPlayback();
@@ -769,47 +1290,88 @@ function startAppleMonitor(){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SPOTIFY
-   ═══════════════════════════════════════════════════════════════ */
-async function loadSpotifyQueue(){
-    showLoadingState();
-    try{
-        const q=buildSearchQuery();
-        const r=await fetch('https://api.spotify.com/v1/search?q='+encodeURIComponent(q)+'&type=track&limit=25',{headers:{Authorization:'Bearer '+spotifyToken}});
-        if (!r.ok) throw new Error('Spotify API ' + r.status);
-        const d=await r.json(),t=d?.tracks?.items||[];
-        currentQueue=t.length>0?t.map(mapSpotify):[...DEMO_TRACKS];
-        if(t.length===0) showToast('No Spotify results — using demo tracks');
-        loadTrack(0);
-    }catch(e){
-        console.error('Spotify load error:',e);
-        currentQueue=[...DEMO_TRACKS];
-        showToast('Spotify error — using demo tracks');
-        loadTrack(0);
-    }
-}
-function mapSpotify(t){return{id:t.id,name:t.name,artist:t.artists.map(a=>a.name).join(', '),album:t.album?.name||'',duration:Math.round((t.duration_ms||0)/1000),artUrl:t.album?.images?.[0]?.url||'',previewUrl:t.preview_url||'',spotifyUri:t.uri,genre:'',mood:''}}
-
-/* ═══════════════════════════════════════════════════════════════
-   PLAYBACK (unchanged core, with resetFeedbackUI on loadTrack)
+   PLAYBACK — [FIXED] Real audio via HTML5 Audio + queue recycling
    ═══════════════════════════════════════════════════════════════ */
 function loadTrack(i){
-    // [GUARDRAIL] Empty queue fallback
+    // [FIXED] Queue recycling: when we've gone through all tracks, reshuffle
     if (!currentQueue.length) {
-        currentQueue = [...DEMO_TRACKS];
-        showToast('Queue empty — using demo tracks');
+        currentQueue = buildPhaseAwareQueue([...DEMO_TRACKS]);
+        showToast('Queue empty — rebuilding with demo tracks');
     }
+    if (i >= currentQueue.length) {
+        // Recycle: re-rank all tracks except disliked ones, reset index
+        showToast('Reshuffling queue based on your feedback');
+        const pool = currentQueue.filter(t => !preferences.dislikedTrackIds.has(t.id || t.name));
+        if (pool.length < 3) {
+            currentQueue = buildPhaseAwareQueue([...DEMO_TRACKS]);
+        } else {
+            // Reset session clock for new cycle
+            sessionStartTime = Date.now();
+            currentQueue = buildPhaseAwareQueue(pool);
+        }
+        i = 0;
+    }
+
     clearPlayback();
-    currentTrackIndex=i%currentQueue.length;
-    const t=currentQueue[currentTrackIndex];
+    stopAudio(); // [FIXED] stop any playing audio
+    currentTrackIndex = i % currentQueue.length;
+    const t = currentQueue[currentTrackIndex];
     updateTrackUI(t);
     resetFeedbackUI();
     updateUpNext();
-    simulatePlayback(t.duration);
+
+    // Try real audio if track has a preview URL
+    if (t.previewUrl) {
+        playRealAudio(t);
+    } else {
+        simulatePlayback(t.duration);
+    }
     setPlayingState(true);
 }
+
+/** Play actual audio via HTML5 Audio element */
+function playRealAudio(track) {
+    clearPlayback();
+    usingRealAudio = true;
+    audioEl.src = track.previewUrl;
+    audioEl.currentTime = 0;
+    audioEl.play().catch(e => {
+        console.warn('Audio play failed, falling back to simulation:', e);
+        usingRealAudio = false;
+        simulatePlayback(track.duration);
+    });
+
+    const dur = track.duration || 180;
+
+    // Monitor real audio playback
+    playbackInterval = setInterval(() => {
+        if (!usingRealAudio) return;
+        const ct = audioEl.currentTime;
+        const total = audioEl.duration || dur;
+        const pct = (ct / total) * 100;
+        document.getElementById('progress-bar').style.width = Math.min(pct, 100) + '%';
+        document.getElementById('current-time').textContent = fmt(Math.floor(ct));
+        document.getElementById('total-time').textContent = fmt(Math.floor(total));
+    }, 250);
+
+    audioEl.onended = () => {
+        clearPlayback();
+        usingRealAudio = false;
+        setTimeout(() => skipTrack(), 500);
+    };
+}
+
+/** Stop real audio */
+function stopAudio() {
+    audioEl.pause();
+    audioEl.src = '';
+    audioEl.onended = null;
+    usingRealAudio = false;
+}
+
 function simulatePlayback(s){
     clearPlayback();
+    usingRealAudio = false;
     let p=0;
     document.getElementById('progress-bar').style.width='0%';
     document.getElementById('current-time').textContent='0:00';
@@ -824,32 +1386,62 @@ function simulatePlayback(s){
 function togglePlayPause(){
     if(isPlaying){
         if(serviceMode==='apple'&&musicInstance)musicInstance.pause();
+        else if(usingRealAudio) audioEl.pause(); // [FIXED] pause real audio
         clearPlayback();setPlayingState(false);
     }else{
         if(serviceMode==='apple'&&musicInstance){musicInstance.play();startAppleMonitor()}
+        else if(usingRealAudio){ audioEl.play(); startRealAudioMonitor(); } // [FIXED] resume real audio
         else{const t=currentQueue[currentTrackIndex];if(t)simulatePlayback(t.duration)}
         setPlayingState(true);
     }
 }
+
+/** Resume real audio monitoring after pause */
+function startRealAudioMonitor() {
+    clearPlayback();
+    playbackInterval = setInterval(() => {
+        if (!usingRealAudio) return;
+        const ct = audioEl.currentTime;
+        const total = audioEl.duration || (currentQueue[currentTrackIndex]?.duration || 180);
+        const pct = (ct / total) * 100;
+        document.getElementById('progress-bar').style.width = Math.min(pct, 100) + '%';
+        document.getElementById('current-time').textContent = fmt(Math.floor(ct));
+    }, 250);
+}
+
 function skipTrack(){
     if (!currentQueue.length) return;
     stopPlayback();
+    stopAudio(); // [FIXED]
     const n=currentTrackIndex+1;
     if(serviceMode==='apple'&&musicInstance)loadAppleTrack(n);
-    else loadTrack(n%currentQueue.length);
+    else loadTrack(n); // [FIXED] loadTrack now handles recycling
 }
 function previousTrack(){
     if (!currentQueue.length) return;
     stopPlayback();
+    stopAudio(); // [FIXED]
     const p=Math.max(0,currentTrackIndex-1);
     if(serviceMode==='apple'&&musicInstance)loadAppleTrack(p);
     else loadTrack(p);
 }
-function seekTrack(e){
-    const p=e.offsetX/e.currentTarget.offsetWidth;
-    document.getElementById('progress-bar').style.width=(p*100)+'%';
-    if(serviceMode==='apple'&&musicInstance&&musicInstance.currentPlaybackDuration)
-        musicInstance.seekToTime(p*musicInstance.currentPlaybackDuration);
+/** [P1-6] Pointer-based seek — supports tap + drag on progress bar */
+function initProgressSeek() {
+    const bar = document.getElementById('progress-track-el');
+    if (!bar) return;
+    let seeking = false;
+    function doSeek(e) {
+        const rect = bar.getBoundingClientRect();
+        const p = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        document.getElementById('progress-bar').style.width = (p * 100) + '%';
+        if (serviceMode === 'apple' && musicInstance && musicInstance.currentPlaybackDuration)
+            musicInstance.seekToTime(p * musicInstance.currentPlaybackDuration);
+        else if (usingRealAudio) audioEl.currentTime = p * (audioEl.duration || 30);
+    }
+    bar.addEventListener('pointerdown', (e) => { seeking = true; bar.setPointerCapture(e.pointerId); doSeek(e); });
+    bar.addEventListener('pointermove', (e) => { if (seeking) doSeek(e); });
+    bar.addEventListener('pointerup', () => { seeking = false; });
+    bar.addEventListener('pointercancel', () => { seeking = false; });
 }
 function stopPlayback(){
     clearPlayback();
@@ -868,28 +1460,59 @@ function clearPlayback(){if(playbackInterval){clearInterval(playbackInterval);pl
    ═══════════════════════════════════════════════════════════════ */
 function updateTrackUI(t){
     document.getElementById('track-name').textContent=t.name;
+    document.getElementById('track-name').title=t.name;
     document.getElementById('artist-name').textContent=t.artist;
+    document.getElementById('artist-name').title=t.artist;
     document.getElementById('album-name').textContent=t.album||'';
+    document.getElementById('album-name').title=t.album||'';
     const img=document.getElementById('album-art-img'),ph=document.getElementById('album-art-placeholder');
     if(t.artUrl){img.src=t.artUrl;img.style.display='block';ph.style.display='none'}
     else{img.style.display='none';ph.style.display='block'}
     document.getElementById('progress-bar').style.width='0%';
     document.getElementById('current-time').textContent='0:00';
     document.getElementById('total-time').textContent=fmt(t.duration);
+
+    // [FIXED] Show current phase + track energy
+    const phaseE = getCurrentPhaseEnergy();
+    const trackE = getTrackEnergy(t);
+    const phaseInfo = ENERGY[phaseE] || {label:'Medium',color:'#c9a84c'};
+    const trackInfo = ENERGY[trackE] || {label:'Medium',color:'#c9a84c'};
+
+    // Determine phase name
+    const elapsed = sessionStartTime ? (Date.now() - sessionStartTime) / 1000 : 0;
+    const p1End = phases[1].duration * 60;
+    const p2End = p1End + phases[2].duration * 60;
+    let phaseName = 'Start';
+    if (elapsed >= p2End) phaseName = 'End';
+    else if (elapsed >= p1End) phaseName = 'Peak';
+
+    const indicator = document.getElementById('phase-indicator');
+    if (indicator) {
+        indicator.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:${phaseInfo.color}"></span>${phaseName} phase · ${phaseInfo.label} energy</span>`;
+        indicator.style.display = 'block';
+    }
 }
 
-/* [CHANGED] Show up to 8 tracks in Up Next */
+/* [FIXED] Show up to 8 tracks in Up Next with energy indicators */
 function updateUpNext(){
     const c=document.getElementById('up-next'),l=document.getElementById('up-next-list');
     const u=currentQueue.slice(currentTrackIndex+1,currentTrackIndex+9); // up to 8 tracks
     if(!u.length){c.style.display='none';return}
     c.style.display='block';
     l.innerHTML='';
+
+    // [FIXED] Show current phase info
+    const phaseEnergy = getCurrentPhaseEnergy();
+    const phaseLabel = ENERGY[phaseEnergy]?.label || 'Medium';
+    const phaseColor = ENERGY[phaseEnergy]?.color || '#c9a84c';
+
     u.forEach((t,i)=>{
+        const trackEnergy = getTrackEnergy(t);
+        const eColor = ENERGY[trackEnergy]?.color || '#c9a84c';
         const d=document.createElement('div');
         d.className='track-item';
-        d.onclick=()=>{stopPlayback();if(serviceMode==='apple'&&musicInstance)loadAppleTrack(currentTrackIndex+1+i);else loadTrack(currentTrackIndex+1+i)};
-        d.innerHTML=`<div style="width:36px;height:36px;border-radius:4px;overflow:hidden;background:var(--bg-warm);display:flex;align-items:center;justify-content:center;flex-shrink:0">${t.artUrl?'<img src="'+t.artUrl+'" style="width:100%;height:100%;object-fit:cover" loading="lazy"/>':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="1"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>'}</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div><div style="font-size:12px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.artist}</div></div><span style="font-size:12px;color:var(--text-tertiary);flex-shrink:0;font-variant-numeric:tabular-nums">${fmt(t.duration)}</span>`;
+        d.onclick=()=>{stopPlayback();stopAudio();if(serviceMode==='apple'&&musicInstance)loadAppleTrack(currentTrackIndex+1+i);else loadTrack(currentTrackIndex+1+i)};
+        d.innerHTML=`<div style="width:36px;height:36px;border-radius:4px;overflow:hidden;background:var(--bg-warm);display:flex;align-items:center;justify-content:center;flex-shrink:0">${t.artUrl?'<img src="'+t.artUrl+'" style="width:100%;height:100%;object-fit:cover" loading="lazy"/>':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="1"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>'}</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div><div style="font-size:12px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.artist}</div></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span style="width:6px;height:6px;border-radius:50%;background:${eColor};opacity:.7" title="Energy ${trackEnergy}"></span><span style="font-size:12px;color:var(--text-tertiary);font-variant-numeric:tabular-nums">${fmt(t.duration)}</span></div>`;
         l.appendChild(d);
     });
 }
@@ -918,6 +1541,7 @@ function resetFeedbackUI() {
     dislikeBtn.classList.remove('disliked','debounced');
     document.getElementById('dislike-overlay').classList.remove('open');
     document.getElementById('reason-input').value = '';
+    document.getElementById('playback-screen').removeAttribute('inert');
     document.getElementById('feedback-buttons').style.display = 'flex';
     hideTunedMsg();
     _feedbackDebounce = false;
@@ -957,6 +1581,7 @@ function handleLike() {
         // Clear opposite state
         dislikeBtn.classList.remove('disliked');
         document.getElementById('dislike-overlay').classList.remove('open');
+        document.getElementById('playback-screen').removeAttribute('inert');
 
         likeBtn.classList.add('liked');
         recordFeedback(track, 'like');
@@ -972,7 +1597,6 @@ function handleDislike() {
         const overlay = document.getElementById('dislike-overlay');
         const dislikeBtn = document.getElementById('dislike-btn');
 
-        // Toggle overlay
         if (overlay.classList.contains('open')) {
             cancelDislike();
             return;
@@ -980,12 +1604,12 @@ function handleDislike() {
 
         dislikeBtn.classList.add('disliked');
         overlay.classList.add('open');
-        // Focus input after animation
+        // [P1-8] Trap focus: make background inert
+        document.getElementById('playback-screen').setAttribute('inert','');
         setTimeout(() => {
             const input = document.getElementById('reason-input');
             if (input) input.focus();
         }, 350);
-        // Feedback buttons remain visible — playback continues uninterrupted
     });
 }
 
@@ -993,6 +1617,7 @@ function cancelDislike() {
     document.getElementById('dislike-overlay').classList.remove('open');
     document.getElementById('dislike-btn').classList.remove('disliked');
     document.getElementById('reason-input').value = '';
+    document.getElementById('playback-screen').removeAttribute('inert');
 }
 
 function submitDislike() {
@@ -1009,6 +1634,7 @@ function submitDislike() {
 
     document.getElementById('dislike-overlay').classList.remove('open');
     document.getElementById('reason-input').value = '';
+    document.getElementById('playback-screen').removeAttribute('inert');
 
     showToast('Got it — adjusting upcoming tracks');
     showTunedMsg('Queue adjusted · avoiding similar');
@@ -1031,8 +1657,35 @@ function hideTunedMsg() {
 /* ═══════════════════════════════════════════════════════════════
    CHIPS
    ═══════════════════════════════════════════════════════════════ */
-function toggleChip(t,x){activeChips[t].has(x)?activeChips[t].delete(x):activeChips[t].add(x);renderChips(t)}
-function removeChip(t,x){activeChips[t].delete(x);renderChips(t)}
+function toggleChip(t,x){activeChips[t].has(x)?activeChips[t].delete(x):activeChips[t].add(x);renderChips(t);updateChipButtons(t)}
+function removeChip(t,x){activeChips[t].delete(x);renderChips(t);updateChipButtons(t)}
+
+/** Sync visual state of chip-btn buttons with activeChips set */
+function updateChipButtons(t) {
+    document.querySelectorAll(`[onclick*="toggleChip('${t}'"]`).forEach(btn => {
+        const txt = btn.textContent.trim();
+        btn.classList.toggle('chip-btn-active', activeChips[t].has(txt));
+    });
+}
+
+/** Add a custom genre typed by the user */
+function addCustomGenre() {
+    const input = document.getElementById('custom-genre-input');
+    const val = input.value.trim();
+    if (!val || val.length < 2) return;
+    const genre = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+    if (activeChips.genre.has(genre)) {
+        showToast(genre + ' is already selected');
+        input.value = '';
+        return;
+    }
+    activeChips.genre.add(genre);
+    renderChips('genre');
+    updateChipButtons('genre');
+    input.value = '';
+    showToast('Added genre: ' + genre);
+}
+
 function renderChips(t){
     const c=document.getElementById(t+'-chips');c.innerHTML='';
     activeChips[t].forEach(x=>{
@@ -1049,14 +1702,14 @@ function renderChips(t){
 function initEnergyPhases(){
     document.querySelectorAll('.energy-phase').forEach(el=>{
         const p=parseInt(el.dataset.phase),dots=el.querySelector('.energy-dots'),slider=el.querySelector('.phase-slider');
-        for(let i=1;i<=5;i++){const b=document.createElement('button');b.className='energy-dot';b.dataset.level=i;b.onclick=()=>setEnergy(p,i);dots.appendChild(b)}
+        for(let i=1;i<=5;i++){const b=document.createElement('button');b.className='energy-dot';b.dataset.level=i;b.setAttribute('aria-label','Energy level '+i+' – '+ENERGY[i].label);b.setAttribute('role','radio');b.onclick=()=>setEnergy(p,i);dots.appendChild(b)}
         slider.addEventListener('input',()=>{phases[p].duration=parseInt(slider.value);refreshPhase(p);updateTotal()});
         updateEnergyDots(p);refreshPhase(p);
     });
     updateTotal();
 }
 function setEnergy(p,l){phases[p].energy=l;updateEnergyDots(p);refreshPhase(p)}
-function updateEnergyDots(p){document.querySelector(`.energy-phase[data-phase="${p}"]`).querySelectorAll('.energy-dot').forEach(d=>{d.classList.toggle('selected',parseInt(d.dataset.level)===phases[p].energy)})}
+function updateEnergyDots(p){document.querySelector(`.energy-phase[data-phase="${p}"]`).querySelectorAll('.energy-dot').forEach(d=>{const sel=parseInt(d.dataset.level)===phases[p].energy;d.classList.toggle('selected',sel);d.setAttribute('aria-checked',sel?'true':'false')})}
 function refreshPhase(p){const el=document.querySelector(`.energy-phase[data-phase="${p}"]`);el.querySelector('.phase-duration').textContent=phases[p].duration+' min';el.querySelector('.phase-energy-label').textContent=ENERGY[phases[p].energy].label}
 function updateTotal(){const t=phases[1].duration+phases[2].duration+phases[3].duration,h=Math.floor(t/60),m=t%60;document.getElementById('total-duration').textContent=h>0?`${h}h ${m}min`:`${m} min`}
 
@@ -1077,17 +1730,19 @@ function fmt(s){if(!s||s<0)return'0:00';const m=Math.floor(s/60),r=Math.floor(s%
    INIT
    ═══════════════════════════════════════════════════════════════ */
 (async function(){
-    const h=await handleSpotifyCallback();
-    if(!h)showScreen('connect-screen');
+    showScreen('connect-screen');
     initEnergyPhases();
+    initProgressSeek();
     renderChips('genre');
     renderChips('mood');
+    updateChipButtons('genre');
+    updateChipButtons('mood');
 
-    // [NEW] Close dislike overlay on Escape key
+    // [P1-8] Close dislike overlay on Escape key
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') cancelDislike();
     });
-    // [NEW] Submit dislike on Enter in reason input
+    // Submit dislike on Enter in reason input
     document.getElementById('reason-input').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); submitDislike(); }
     });
