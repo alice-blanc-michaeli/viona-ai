@@ -7,8 +7,11 @@
     <meta name="description" content="Viona — AI-curated music sessions that adapt to your feedback in real-time.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
     <title>Viona</title>
-    <script src="https://js-cdn.music.apple.com/musickit/v3/musickit.js" crossorigin></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- MusicKit loaded dynamically only when user connects Apple Music -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"></noscript>
     <style>
         /* ── VARIABLES ───────────────────────────── */
         :root{
@@ -1003,27 +1006,37 @@ function showScreen(id){
    The token is yours as the developer — users authenticate
    via Apple's popup.
    ───────────────────────────────────────────────────────────── */
-const APPLE_DEVELOPER_TOKEN = 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjU0S0hRN0JHUTMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiI4RDc1U1FVV1laIiwiaWF0IjoxNzcwNjIzNzA0LCJleHAiOjE3ODYxNzU3MDR9.aoBpWR_os5M9fml6zrcnWQ1T2qybzaiNpJRkNoqFC1R2li0L2CafYd_Os_1CuOOOz8685d9yEtIU57Qk_r6tOA
-';
+const APPLE_DEVELOPER_TOKEN = 'PASTE_YOUR_JWT_HERE';
 
 async function connectAppleMusic(){
     const btn = document.getElementById('apple-connect-btn-main');
     const errEl = document.getElementById('apple-error');
     errEl.style.display='none';
 
-    // [FIXED] Check for placeholder token before attempting connection
     if (APPLE_DEVELOPER_TOKEN === 'PASTE_YOUR_JWT_HERE') {
         errEl.style.display='block';
         errEl.textContent = 'Apple Music requires a developer token. Add your JWT to the code, or use Demo mode.';
         return;
     }
 
-    // Show loading state on the button
+    // Show loading state
     const origHTML = btn.innerHTML;
     btn.style.opacity='0.6';btn.style.pointerEvents='none';
     btn.querySelector('div > div:first-child').textContent='Connecting…';
 
     try {
+        // Dynamically load MusicKit if not already loaded
+        if (typeof MusicKit === 'undefined') {
+            await new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'https://js-cdn.music.apple.com/musickit/v3/musickit.js';
+                s.crossOrigin = 'anonymous';
+                s.onload = resolve;
+                s.onerror = () => reject(new Error('Could not load Apple Music SDK'));
+                document.head.appendChild(s);
+            });
+        }
+
         await MusicKit.configure({
             developerToken: APPLE_DEVELOPER_TOKEN,
             app: { name: 'Viona', build: '1.0.0' }
