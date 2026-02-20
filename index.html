@@ -4,14 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#f7f6f3">
-    <meta name="description" content="Viona — AI-curated music sessions that adapt to your feedback in real-time.">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
     <title>Viona</title>
-    <!-- MusicKit loaded dynamically only when user connects Apple Music -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"></noscript>
     <style>
         /* ── VARIABLES ───────────────────────────── */
         :root{
@@ -214,7 +207,7 @@
         <p class="body-sm" style="max-width:320px">AI-curated music sessions<br>Connect Apple Music or explore in demo mode.</p>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px" class="rise rise-1">
-        <button class="btn-service" id="apple-connect-btn-main" onclick="connectAppleMusic()">
+        <button class="btn-service" id="apple-connect-btn-main" data-action="connect-apple">
             <div class="svc-dot" style="background:var(--apple)"></div>
             <div style="flex:1"><div style="font-weight:600">Apple Music</div><div class="body-sm" style="font-size:12px;margin-top:2px">Sign in with your Apple account</div></div>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -222,7 +215,7 @@
     </div>
     <!-- Apple Music error (shown inline if connection fails) -->
     <div id="apple-error" class="rise" style="display:none;margin-bottom:16px;text-align:center;font-size:12px;color:#c45a5a"></div>
-    <div class="rise rise-2"><button class="btn btn-ghost" onclick="startDemo()" style="width:100%;text-align:center">Try Demo Mode
+    <div class="rise rise-2"><button class="btn btn-ghost" data-action="start-demo" style="width:100%;text-align:center">Try Demo Mode
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-left:4px"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button></div>
 </div>
@@ -233,7 +226,7 @@
 <div class="container section" style="padding-top:max(48px,var(--safe-top));padding-bottom:max(48px,var(--safe-bottom))">
     <div class="rise" style="margin-bottom:48px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <button class="btn btn-ghost" onclick="showScreen('connect-screen')" style="padding:0;font-size:10px;letter-spacing:.06em;text-transform:uppercase;min-height:44px;display:inline-flex;align-items:center">
+            <button class="btn btn-ghost" data-action="go-connect" style="padding:0;font-size:10px;letter-spacing:.06em;text-transform:uppercase;min-height:44px;display:inline-flex;align-items:center">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="margin-right:4px"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Back
             </button>
             <span id="connection-badge" class="badge"></span>
@@ -247,40 +240,40 @@
     <div class="rise rise-2" style="margin-bottom:40px">
         <label class="label" style="display:block;margin-bottom:14px">Genres</label>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px" class="genre-chip-grid">
-            <button class="chip-btn" onclick="toggleChip('genre','Pop')">Pop</button>
-            <button class="chip-btn" onclick="toggleChip('genre','Jazz')">Jazz</button>
-            <button class="chip-btn" onclick="toggleChip('genre','Indie')">Indie</button>
-            <button class="chip-btn" onclick="toggleChip('genre','R&B')">R&B</button>
-            <button class="chip-btn" onclick="toggleChip('genre','Electronic')">Electronic</button>
-            <button class="chip-btn" onclick="toggleChip('genre','Classical')">Classical</button>
-            <button class="chip-btn" onclick="toggleChip('genre','Rock')">Rock</button>
-            <button class="chip-btn" onclick="toggleChip('genre','Hip-Hop')">Hip-Hop</button>
-            <button class="chip-btn" onclick="toggleChip('genre','Folk')">Folk</button>
-            <button class="chip-btn" onclick="toggleChip('genre','Latin')">Latin</button>
-            <button class="chip-btn" onclick="toggleChip('genre','Blues')">Blues</button>
-            <button class="chip-btn" onclick="toggleChip('genre','Soul')">Soul</button>
-            <button class="chip-btn" onclick="toggleChip('genre','Reggae')">Reggae</button>
-            <button class="chip-btn" onclick="toggleChip('genre','Metal')">Metal</button>
-            <button class="chip-btn" onclick="toggleChip('genre','Funk')">Funk</button>
-            <button class="chip-btn" onclick="toggleChip('genre','World')">World</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="Pop">Pop</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="Jazz">Jazz</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="Indie">Indie</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="R&B">R&B</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="Electronic">Electronic</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="Classical">Classical</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="Rock">Rock</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="Hip-Hop">Hip-Hop</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="Folk">Folk</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="Latin">Latin</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="Blues">Blues</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="Soul">Soul</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="Reggae">Reggae</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="Metal">Metal</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="Funk">Funk</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="genre" data-chip-value="World">World</button>
         </div>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
-            <input id="custom-genre-input" type="text" class="input" placeholder="Or type your own genre..." style="font-size:14px;flex:1;padding:10px 0;margin:0" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomGenre()}"/>
-            <button class="chip-btn" onclick="addCustomGenre()" style="flex-shrink:0;white-space:nowrap">+ Add</button>
+            <input id="custom-genre-input" type="text" class="input" placeholder="Or type your own genre..." style="font-size:14px;flex:1;padding:10px 0;margin:0"/>
+            <button class="chip-btn" data-action="add-custom-genre" style="flex-shrink:0;white-space:nowrap">+ Add</button>
         </div>
         <div id="genre-chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
     </div>
     <div class="rise rise-3" style="margin-bottom:40px">
         <label class="label" style="display:block;margin-bottom:14px">Mood</label>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-            <button class="chip-btn" onclick="toggleChip('mood','Chill')">Chill</button>
-            <button class="chip-btn" onclick="toggleChip('mood','Romantic')">Romantic</button>
-            <button class="chip-btn" onclick="toggleChip('mood','Energetic')">Energetic</button>
-            <button class="chip-btn" onclick="toggleChip('mood','Melancholy')">Melancholy</button>
-            <button class="chip-btn" onclick="toggleChip('mood','Focus')">Focus</button>
-            <button class="chip-btn" onclick="toggleChip('mood','Uplifting')">Uplifting</button>
-            <button class="chip-btn" onclick="toggleChip('mood','Dark')">Dark</button>
-            <button class="chip-btn" onclick="toggleChip('mood','Groovy')">Groovy</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="mood" data-chip-value="Chill">Chill</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="mood" data-chip-value="Romantic">Romantic</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="mood" data-chip-value="Energetic">Energetic</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="mood" data-chip-value="Melancholy">Melancholy</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="mood" data-chip-value="Focus">Focus</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="mood" data-chip-value="Uplifting">Uplifting</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="mood" data-chip-value="Dark">Dark</button>
+            <button class="chip-btn" data-action="toggle-chip" data-chip-type="mood" data-chip-value="Groovy">Groovy</button>
         </div>
         <div id="mood-chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
     </div>
@@ -300,7 +293,7 @@
             <div class="energy-phase" data-phase="3"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><span style="font-size:14px;font-weight:500">End</span><div style="display:flex;align-items:center;gap:10px"><span class="phase-duration body-sm">20 min</span><span style="color:var(--border)">·</span><span class="phase-energy-label" style="font-size:12px;font-weight:600">Very Low</span></div></div><div style="display:flex;align-items:center;gap:16px"><input type="range" min="10" max="90" step="5" value="20" class="phase-slider" style="flex:1"/><div class="energy-dots" style="display:flex;gap:5px"></div></div></div>
         </div>
     </div>
-    <div class="rise rise-6"><button onclick="startSession()" class="btn btn-primary" style="padding:18px 32px;font-size:14px">Begin Session</button></div>
+    <div class="rise rise-6"><button data-action="start-session" class="btn btn-primary" style="padding:18px 32px;font-size:14px">Begin Session</button></div>
     <div style="height:48px"></div>
 </div>
 </div>
@@ -310,7 +303,7 @@
 <div class="container" style="min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding-top:max(32px,var(--safe-top));padding-bottom:max(24px,var(--safe-bottom))">
     <!-- Header row -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px" class="rise">
-        <button class="btn btn-ghost" onclick="backToSetup()" style="padding:0;font-size:12px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right:6px"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Edit Session</button>
+        <button class="btn btn-ghost" data-action="back-to-setup" style="padding:0;font-size:12px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right:6px"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Edit Session</button>
         <span class="label" style="color:var(--text-tertiary)">Now Playing</span>
     </div>
     <!-- Album art -->
@@ -337,20 +330,20 @@
     </div>
     <!-- Playback controls -->
     <div class="rise rise-4" style="display:flex;align-items:center;justify-content:center;gap:24px;margin-bottom:28px">
-        <button class="ctrl-btn" onclick="previousTrack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
-        <button id="play-pause-btn" class="play-btn" onclick="togglePlayPause()">
+        <button class="ctrl-btn" data-action="previous-track"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+        <button id="play-pause-btn" class="play-btn" data-action="toggle-play">
             <svg id="play-icon" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
             <svg id="pause-icon" width="20" height="20" viewBox="0 0 24 24" fill="white" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
         </button>
-        <button class="ctrl-btn" onclick="skipTrack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+        <button class="ctrl-btn" data-action="skip-track"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
     </div>
     <!-- [CHANGED] Feedback buttons — always visible, with liked/disliked state -->
     <div class="rise rise-5" style="margin-bottom:16px">
         <div id="feedback-buttons" style="display:flex;align-items:center;justify-content:center;gap:20px">
-            <button id="dislike-btn" class="fb-btn" onclick="handleDislike()" title="Not for me">
+            <button id="dislike-btn" class="fb-btn" data-action="handle-dislike" title="Not for me">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3zm7-13h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>
             </button>
-            <button id="like-btn" class="fb-btn" onclick="handleLike()" title="More like this">
+            <button id="like-btn" class="fb-btn" data-action="handle-like" title="More like this">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
             </button>
         </div>
@@ -370,17 +363,17 @@
 
 <!-- ══════════ DISLIKE OVERLAY (fixed, outside page flow) ══════════ -->
 <div id="dislike-overlay" class="dislike-overlay" role="dialog" aria-modal="true" aria-label="Track feedback">
-    <div class="dislike-backdrop" onclick="cancelDislike()"></div>
+    <div class="dislike-backdrop" data-action="cancel-dislike"></div>
     <div class="dislike-panel">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
             <p class="body-sm" style="font-weight:500;color:var(--text)">What's off?</p>
-            <button onclick="cancelDislike()" aria-label="Close" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:0 0;border:none;cursor:pointer;color:var(--text-secondary);-webkit-tap-highlight-color:transparent">
+            <button data-action="cancel-dislike" aria-label="Close" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:0 0;border:none;cursor:pointer;color:var(--text-secondary);-webkit-tap-highlight-color:transparent">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
             </button>
         </div>
         <input id="reason-input" type="text" class="input" placeholder="Too slow, not my style... (optional)" style="margin-bottom:12px" aria-label="Reason for disliking"/>
         <p style="font-size:11px;color:var(--text-secondary);margin-bottom:14px;text-align:center">This song keeps playing — we'll adjust what's next</p>
-        <button id="dislike-submit-btn" onclick="submitDislike()" class="btn btn-primary" style="font-size:12px;padding:12px">Adjust Queue</button>
+        <button id="dislike-submit-btn" data-action="submit-dislike" class="btn btn-primary" style="font-size:12px;padding:12px">Adjust Queue</button>
     </div>
 </div>
 
@@ -1006,16 +999,14 @@ function showScreen(id){
    The token is yours as the developer — users authenticate
    via Apple's popup.
    ───────────────────────────────────────────────────────────── */
-const APPLE_DEVELOPER_TOKEN = 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjU0S0hRN0JHUTMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiI4RDc1U1FVV1laIiwiaWF0IjoxNzcwNjIzNzA0LCJleHAiOjE3ODYxNzU3MDR9.aoBpWR_os5M9fml6zrcnWQ1T2qybzaiNpJRkNoqFC1R2li0L2CafYd_Os_1CuOOOz8685d9yEtIU57Qk_r6tOA
-';
+const APPLE_DEVELOPER_TOKEN = 'PASTE_YOUR_JWT_HERE';
 
 async function connectAppleMusic(){
     const btn = document.getElementById('apple-connect-btn-main');
     const errEl = document.getElementById('apple-error');
     errEl.style.display='none';
 
-    if (APPLE_DEVELOPER_TOKEN === 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjU0S0hRN0JHUTMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiI4RDc1U1FVV1laIiwiaWF0IjoxNzcwNjIzNzA0LCJleHAiOjE3ODYxNzU3MDR9.aoBpWR_os5M9fml6zrcnWQ1T2qybzaiNpJRkNoqFC1R2li0L2CafYd_Os_1CuOOOz8685d9yEtIU57Qk_r6tOA
-') {
+    if (APPLE_DEVELOPER_TOKEN === 'PASTE_YOUR_JWT_HERE') {
         errEl.style.display='block';
         errEl.textContent = 'Apple Music requires a developer token. Add your JWT to the code, or use Demo mode.';
         return;
@@ -1678,9 +1669,9 @@ function removeChip(t,x){activeChips[t].delete(x);renderChips(t);updateChipButto
 
 /** Sync visual state of chip-btn buttons with activeChips set */
 function updateChipButtons(t) {
-    document.querySelectorAll(`[onclick*="toggleChip('${t}'"]`).forEach(btn => {
-        const txt = btn.textContent.trim();
-        btn.classList.toggle('chip-btn-active', activeChips[t].has(txt));
+    document.querySelectorAll(`[data-action="toggle-chip"][data-chip-type="${t}"]`).forEach(btn => {
+        const val = btn.dataset.chipValue;
+        btn.classList.toggle('chip-btn-active', activeChips[t].has(val));
     });
 }
 
@@ -1707,7 +1698,7 @@ function renderChips(t){
     activeChips[t].forEach(x=>{
         const d=document.createElement('div');d.className='chip-active';
         const s=x.replace(/'/g,"\\'");
-        d.innerHTML=`${x}<button onclick="removeChip('${t}','${s}')">×</button>`;
+        d.innerHTML=`${x}<button data-action="remove-chip" data-chip-type="${t}" data-chip-value="${s}">×</button>`;
         c.appendChild(d);
     });
 }
@@ -1754,11 +1745,46 @@ function fmt(s){if(!s||s<0)return'0:00';const m=Math.floor(s/60),r=Math.floor(s%
     updateChipButtons('genre');
     updateChipButtons('mood');
 
-    // [P1-8] Close dislike overlay on Escape key
+    // ── DELEGATED EVENT HANDLING (replaces all inline onclick) ──
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        switch (action) {
+            // Connect screen
+            case 'connect-apple': connectAppleMusic(); break;
+            case 'start-demo': startDemo(); break;
+            case 'go-connect': showScreen('connect-screen'); break;
+            // Setup - chips
+            case 'toggle-chip': toggleChip(btn.dataset.chipType, btn.dataset.chipValue); break;
+            case 'remove-chip': removeChip(btn.dataset.chipType, btn.dataset.chipValue); break;
+            case 'add-custom-genre': addCustomGenre(); break;
+            // Setup - session
+            case 'start-session': startSession(); break;
+            // Playback
+            case 'back-to-setup': backToSetup(); break;
+            case 'previous-track': previousTrack(); break;
+            case 'toggle-play': togglePlayPause(); break;
+            case 'skip-track': skipTrack(); break;
+            case 'handle-dislike': handleDislike(); break;
+            case 'handle-like': handleLike(); break;
+            // Dislike overlay
+            case 'cancel-dislike': cancelDislike(); break;
+            case 'submit-dislike': submitDislike(); break;
+        }
+    });
+
+    // Custom genre input: Enter key
+    document.getElementById('custom-genre-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); addCustomGenre(); }
+    });
+
+    // Dislike overlay: Escape key
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') cancelDislike();
     });
-    // Submit dislike on Enter in reason input
+
+    // Dislike reason input: Enter key
     document.getElementById('reason-input').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); submitDislike(); }
     });
