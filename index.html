@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#f7f6f3">
     <title>Viona</title>
     <style>
         /* ── VARIABLES ───────────────────────────── */
@@ -999,16 +998,14 @@ function showScreen(id){
    The token is yours as the developer — users authenticate
    via Apple's popup.
    ───────────────────────────────────────────────────────────── */
-const APPLE_DEVELOPER_TOKEN = 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjU0S0hRN0JHUTMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiI4RDc1U1FVV1laIiwiaWF0IjoxNzcwNjIzNzA0LCJleHAiOjE3ODYxNzU3MDR9.aoBpWR_os5M9fml6zrcnWQ1T2qybzaiNpJRkNoqFC1R2li0L2CafYd_Os_1CuOOOz8685d9yEtIU57Qk_r6tOA
-';
+const APPLE_DEVELOPER_TOKEN = 'PASTE_YOUR_JWT_HERE';
 
 async function connectAppleMusic(){
     const btn = document.getElementById('apple-connect-btn-main');
     const errEl = document.getElementById('apple-error');
     errEl.style.display='none';
 
-    if (APPLE_DEVELOPER_TOKEN === 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjU0S0hRN0JHUTMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiI4RDc1U1FVV1laIiwiaWF0IjoxNzcwNjIzNzA0LCJleHAiOjE3ODYxNzU3MDR9.aoBpWR_os5M9fml6zrcnWQ1T2qybzaiNpJRkNoqFC1R2li0L2CafYd_Os_1CuOOOz8685d9yEtIU57Qk_r6tOA
-') {
+    if (APPLE_DEVELOPER_TOKEN === 'PASTE_YOUR_JWT_HERE') {
         errEl.style.display='block';
         errEl.textContent = 'Apple Music requires a developer token. Add your JWT to the code, or use Demo mode.';
         return;
@@ -1747,46 +1744,34 @@ function fmt(s){if(!s||s<0)return'0:00';const m=Math.floor(s/60),r=Math.floor(s%
     updateChipButtons('genre');
     updateChipButtons('mood');
 
-    // ── DELEGATED EVENT HANDLING (replaces all inline onclick) ──
+    // Delegated click handling (CSP-safe, no inline onclick)
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-action]');
         if (!btn) return;
-        const action = btn.dataset.action;
-        switch (action) {
-            // Connect screen
+        switch (btn.dataset.action) {
             case 'connect-apple': connectAppleMusic(); break;
             case 'start-demo': startDemo(); break;
             case 'go-connect': showScreen('connect-screen'); break;
-            // Setup - chips
             case 'toggle-chip': toggleChip(btn.dataset.chipType, btn.dataset.chipValue); break;
             case 'remove-chip': removeChip(btn.dataset.chipType, btn.dataset.chipValue); break;
             case 'add-custom-genre': addCustomGenre(); break;
-            // Setup - session
             case 'start-session': startSession(); break;
-            // Playback
             case 'back-to-setup': backToSetup(); break;
             case 'previous-track': previousTrack(); break;
             case 'toggle-play': togglePlayPause(); break;
             case 'skip-track': skipTrack(); break;
             case 'handle-dislike': handleDislike(); break;
             case 'handle-like': handleLike(); break;
-            // Dislike overlay
             case 'cancel-dislike': cancelDislike(); break;
             case 'submit-dislike': submitDislike(); break;
         }
     });
-
-    // Custom genre input: Enter key
     document.getElementById('custom-genre-input').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); addCustomGenre(); }
     });
-
-    // Dislike overlay: Escape key
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') cancelDislike();
     });
-
-    // Dislike reason input: Enter key
     document.getElementById('reason-input').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); submitDislike(); }
     });
